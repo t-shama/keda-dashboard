@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "install": "cd client && yarn install && cd ../server && yarn install",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"Server,Client\" -c \"magenta.bold,blue.bold\" \"cd server && yarn run watch\" \"cd client && yarn run start\"",
+    "build": "cd client && yarn build && yarn upgrade caniuse-lite browserslist && cd ../server && yarn build"
+  },
+  "dependencies": {
+    "concurrently": "^4.1.0"
+  }
+}

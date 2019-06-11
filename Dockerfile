@@ -13,4 +13,4 @@ FROM node:lts-alpine as final
 COPY --from=build-env [ "/app", "/app" ]
 ENV PORT=80
 
-CMD [ "node", "/app/server.js" ]
+CMD [ "node", "/app/server.js", "--production" ]

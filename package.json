@@ -5,6 +5,7 @@
     "build": "cd client && yarn build && yarn upgrade caniuse-lite browserslist && cd ../server && yarn build"
   },
   "dependencies": {
+    "@kubernetes/client-node": "^0.10.2",
     "concurrently": "^4.1.0"
   }
 }

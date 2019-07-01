@@ -24,4 +24,58 @@ export function setupApis(app: Express) {
         res.setHeader('Content-Type', 'application/json');
         res.send(jsonStr);
     });
+
+    app.get('/api/namespaces', async (_, res) => {
+        const cluster = kc.getCurrentCluster();
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+
+        const opts: request.Options = {
+            url: `${cluster.server}/api/v1/namespaces/`
+        };
+        kc.applyToRequest(opts);
+        const jsonStr = await request.get(opts);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonStr);
+    });
+
+    app.get('/api/pods', async (_, res) => {
+        const cluster = kc.getCurrentCluster();
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+
+        const opts: request.Options = {
+            url: `${cluster.server}/api/v1/namespaces/default/pods`
+        };
+        kc.applyToRequest(opts);
+        const jsonStr = await request.get(opts);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonStr);
+    });
+
+    app.get('/api/hpa', async (_, res) => {
+        const cluster = kc.getCurrentCluster();
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+
+        const opts: request.Options = {
+            url: `${cluster.server}/apis/autoscaling/v1/horizontalpodautoscalers`
+        };
+        kc.applyToRequest(opts);
+        const jsonStr = await request.get(opts);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonStr);
+    });
 }

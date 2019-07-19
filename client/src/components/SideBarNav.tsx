@@ -11,16 +11,21 @@ import { BrowserRouter as Router, Link } from 'react-router-dom'
 const NavItem: React.FunctionComponent<{text: string, to: string}> = (props) => {
     return (
       <Router>
-        <ListItem button key={props.text}> 
-          <Link to={props.to}>
+        <Link to={props.to} style={{ textDecoration: 'none', color:'black' }}>
+          <ListItem button key={props.text}> 
             <ListItemText primary={props.text} />
-          </Link>
-        </ListItem>
+          </ListItem>
+        </Link>
       </Router>
     );
 };
 
-const SideBarNav: React.FunctionComponent<{ content: any, navigationLinks: NavLink[] }> = (props) => {
+const SideBarNav: React.FunctionComponent<{ content: any }> = (props) => {
+    const navLinks:NavLink[] = [
+      {text: "Overview", link: "/"}, 
+      {text: "Scaled Objects", link: "/scaled-objects"}
+    ];
+    
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
@@ -85,7 +90,7 @@ const SideBarNav: React.FunctionComponent<{ content: any, navigationLinks: NavLi
             <Divider />
 
             <List>
-              { props.navigationLinks.map((link: NavLink) => <NavItem text={link.text} to={link.link}></NavItem>) }
+              { navLinks.map((link: NavLink) => <NavItem text={link.text} to={link.link}></NavItem>) }
             </List>
         </Drawer>
 
@@ -107,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) =>
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-      background: '#2b78e4'
+      background: '#2b78e4',
     },
     appBarShift: {
       width: `calc(100% - ${drawerWidth}px)`,
@@ -152,7 +157,7 @@ const useStyles = makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
       marginLeft: 0,
-    },
+    }
   }),
 );
 

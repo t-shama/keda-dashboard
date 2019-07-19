@@ -1,11 +1,13 @@
 import React from 'react';
-import { Paper, Typography, Table, TableCell, TableBody, TableRow, TableHead, Grid, Chip } from '@material-ui/core';
+import { Paper, Typography, Table, TableCell, TableBody, TableRow, TableHead, Grid, Chip, CssBaseline } from '@material-ui/core';
 import { V1Deployment } from '@kubernetes/client-node';
 import { ScaleControllerLog } from '../models/ScaleControllerLog';
+import SideBarNav from './SideBarNav';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import Error from '@material-ui/icons/Error';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import WarningRounded from '@material-ui/icons/WarningRounded';
+import LoadingView from './LoadingView';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -92,16 +94,6 @@ const ScaleControllerDetails: React.FunctionComponent<{ deployment: V1Deployment
     );
 };
 
-const ReplicaDisplay: React.FunctionComponent<{  }> = (props) => {
-    const classes = useStyles();
-
-    return (
-        <Paper className={classes.root}>
-            <Typography variant="h6" id="tableTitle">Replicas</Typography>
-        </Paper>
-    );
-};
-
 const ScaleControllerLogRow: React.FunctionComponent<{ log: ScaleControllerLog }> = (props) => {
     const classes = useStyles();
     let icon = <CheckCircle className={classes.statusOk}></CheckCircle>;
@@ -150,26 +142,91 @@ const ScaleControllerLogDisplay: React.FunctionComponent<{ logs: ScaleController
     );
 };
 
-const ScaleControllerView: React.FunctionComponent<{ deployment: V1Deployment, logs: ScaleControllerLog[]  }> = (props) => {
-    return (
-        <div>
-            <Grid container spacing={5}>
-                <Grid item xs={12} md={12} lg={12}>
-                        <ScaleControllerDetails deployment={props.deployment}></ScaleControllerDetails>
-                </Grid>
-            </Grid>
-            <Grid container spacing={5}>
-                <Grid item xs={12} md={12} lg={12}>
-                    <ReplicaDisplay></ReplicaDisplay>
-                </Grid>
-            </Grid>
-            <Grid container spacing={5}>
-                <Grid item xs={12} md={12} lg={12}>
-                    <ScaleControllerLogDisplay logs={props.logs}></ScaleControllerLogDisplay>
-                </Grid>
-            </Grid>
-        </div>
-    );
-};
+export default class ScaleControllerDashboard extends React.Component<ScaleControllerDashboardProps, ScaleControllerDashboardState> {
+    constructor(props: ScaleControllerDashboardProps) {
+        super(props);
 
-export default ScaleControllerView;
+        this.state = {
+            loaded: false,
+            deployment: new V1Deployment(),
+            logs: []
+        };
+    }
+
+    formatLogs(text: string) {
+        let logs = text.split("\n");
+        let scaleControllerLogs: ScaleControllerLog[] = [];
+
+        logs.forEach(function(log) {
+            let logRegex = new RegExp("time.*level.*msg");
+            let logSplit = new RegExp("(time|level|msg)=");
+            let removeDoubleQuotes = new RegExp("^\"|\"$");
+            
+            if (logRegex.test(log)) {
+                let logComponents = log.split(logSplit);
+                let scaleControllerLog = new ScaleControllerLog(logComponents[6].replace(removeDoubleQuotes, "").trim(), logComponents[4].trim(), 
+                                        logComponents[2].replace(removeDoubleQuotes, "").trim(), logComponents[4].trim());
+                scaleControllerLogs.push(scaleControllerLog);
+            }
+        });
+
+        return scaleControllerLogs;
+    }
+
+    async componentDidMount() {
+        await fetch('/api/keda')
+            .then(res => { return res.json(); })
+            .then(data => { 
+                let keda = new V1Deployment();
+                keda.metadata = data.metadata;
+                keda.spec = data.spec;
+                keda.status = data.status;
+                this.setState({ deployment: keda }); 
+        });
+
+        await fetch('/api/logs/scaledecision')
+            .then(res => res.text().then(text => 
+                { this.setState( {logs: this.formatLogs(text) }) }));
+
+        this.setState( { loaded:true });
+    }
+
+    getScaleControllerDashboardContent() {
+        return (
+            <div>
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={12} lg={12}>
+                            <ScaleControllerDetails deployment={this.state.deployment}></ScaleControllerDetails>
+                    </Grid>
+                </Grid>
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={12} lg={12}>
+                        <ScaleControllerLogDisplay logs={this.state.logs}></ScaleControllerLogDisplay>
+                    </Grid>
+                </Grid>
+            </div>
+        );
+    }
+
+    render() {
+        if (this.state.loaded) {
+            return (
+                <React.Fragment>
+                   <CssBaseline /> 
+                   <SideBarNav content={this.getScaleControllerDashboardContent()}></SideBarNav>         
+               </React.Fragment>
+            );
+        } else {
+            return <LoadingView></LoadingView>
+        }
+    }
+}
+
+interface ScaleControllerDashboardProps {
+}
+
+interface ScaleControllerDashboardState {
+    loaded: boolean;
+    deployment: V1Deployment;
+    logs: ScaleControllerLog[];
+}

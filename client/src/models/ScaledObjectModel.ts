@@ -1,40 +1,70 @@
 // Scaled Object Model interface and constructor
-export interface ScaledObjectModel {
+export class ScaledObjectModel {
     metadata: ScaledObjectMetadata;
     spec: ScaledObjectSpec;
-}
+    triggers: ScaledObjectTriggers;
+    status: ScaledObjectStatus;
 
-export interface ScaledObjectModelConstructor {
-    new (metadata: ScaledObjectMetadata, spec: ScaledObjectSpec): ScaledObjectModel;
-    clone(): ScaledObjectModel
+    constructor(metadata: ScaledObjectMetadata, spec: ScaledObjectSpec, triggers: ScaledObjectTriggers, status: ScaledObjectStatus) {
+        this.metadata = metadata;
+        this.spec = spec;
+        this.triggers = triggers;
+        this.status = status;
+    }
 }
-
-export var ScaledObjectModel: ScaledObjectModelConstructor;
 
 // Scaled Object Metadata interface and constructor
-export interface ScaledObjectMetadata {
+export class ScaledObjectMetadata {
     name: string;
     namespace: string;
     triggerType: string;
     selfLink: string;
-}
 
-export interface ScaledObjectMetadataConstructor {
-    new (name: string, namespace: string, triggerType: string, selfLink: string): ScaledObjectMetadata;
-    clone(): ScaledObjectMetadata
+    constructor(name: string, namespace: string, triggerType: string, selfLink: string) {
+        this.name = name;
+        this.namespace = namespace;
+        this.triggerType = triggerType;
+        this.selfLink = selfLink;
+    }
 }
-export var ScaledObjectMetadata: ScaledObjectMetadataConstructor;
 
 // Scaled Object Spec and Constructor
-export interface ScaledObjectSpec {
+export class ScaledObjectSpec {
     cooldownPeriod: number;
     maxReplicaCount: number;
     minReplicaCount: number;
     pollingInterval: number;
+    triggers: ScaledObjectTriggers[];
+    scaleTargetRef: {[key:string]: string};
+    
+    constructor(cooldownPeriod: number, maxReplicaCount: number, minReplicaCount: number, pollingInterval: number, triggers: ScaledObjectTriggers[], scaleTargetRef: {[key:string]: string}) {
+        this.cooldownPeriod = cooldownPeriod;
+        this.maxReplicaCount = maxReplicaCount;
+        this.minReplicaCount = minReplicaCount;
+        this.pollingInterval = pollingInterval;
+        this.triggers = triggers;
+        this.scaleTargetRef = scaleTargetRef;
+    }
 }
 
-export interface ScaledObjectSpecConstructor {
-    new (cooldownPeriod: number, maxReplicaCount: number, minReplicaCount: number, pollingInterval: number): ScaledObjectSpec;
-    clone(): ScaledObjectSpec
+export class ScaledObjectTriggers {
+    type: string;
+    metadata: {[key: string]: string};
+
+    constructor(type: string, metadata: {[key: string]: string}) {
+        this.type = type;
+        this.metadata = metadata;
+    }
 }
-export var ScaledObjectSpec: ScaledObjectSpecConstructor;
+
+export class ScaledObjectStatus {
+    currentReplicas: number;
+    desiredReplicas: number;
+    lastActiveTime: string;
+
+    constructor(currentReplicas: number, desiredReplicas: number, lastActiveTime: string) {
+        this.currentReplicas = currentReplicas;
+        this.desiredReplicas = desiredReplicas;
+        this.lastActiveTime = lastActiveTime;
+    }
+}

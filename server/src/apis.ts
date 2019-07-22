@@ -26,6 +26,25 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
+    app.get(`/api/scaledobjects/:name`, async (req, res) => {
+        let name = req.params.name;
+
+        const cluster = kc.getCurrentCluster();
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+        const opts: request.Options = {
+            url: `${cluster.server}/apis/keda.k8s.io/v1alpha1/scaledobjects/${name}`
+        };
+        kc.applyToRequest(opts);
+        const jsonStr = await request.get(opts);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonStr);
+    });
+
     app.get('/api/pods', async (_, res) => {
         const cluster = kc.getCurrentCluster();
         if (!cluster) {
@@ -146,7 +165,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-w8hd8/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-rksj4/log`
         };
         kc.applyToRequest(opts);
         let logs = await request.get(opts);
@@ -165,7 +184,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-w8hd8/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-rksj4/log`
         };
         kc.applyToRequest(opts);
         const logs = await request.get(opts);

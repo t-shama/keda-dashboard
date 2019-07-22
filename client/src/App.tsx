@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { CssBaseline } from '@material-ui/core';
 import { Style } from 'jss';
-import ScaleControllerDashboard from './components/ScaleControllerDashboard';
-import ScaledObjectsDashboard from './components/ScaledObjectsDashboard';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import ScaleControllerDashboard from './components/ScaleControllerDashboard/ScaleControllerDashboard';
+import ScaledObjectsDashboard from './components/ScaledObjectsDashboard/ScaledObjectsDashboard';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import ScaledObjectDetailsDashboard from './components/ScaledObjectDashboard/ScaledObjectDashboard';
 
 class App extends Component<{}, {}> {
     constructor(props: {}) {
@@ -29,9 +30,8 @@ class App extends Component<{}, {}> {
                 <Router>
                     <Switch>
                         <Route exact path="/" component={ScaleControllerDashboard}></Route>
-                    </Switch>
-                    <Switch>
                         <Route exact path="/scaled-objects" component={ScaledObjectsDashboard}></Route>
+                        <Route path="/scaled-objects/:name" component={ScaledObjectDetailsDashboard}></Route>
                     </Switch>
                 </Router>
             </React.Fragment>

@@ -16,18 +16,23 @@ export class ScaledObjectModel {
 
 // Scaled Object Metadata interface and constructor
 export class ScaledObjectMetadata {
-    annotations: string[]
     name: string;
     namespace: string;
     triggerType: string;
     selfLink: string;
+    creationTimestamp: string;
+    annotations: string[];
+    labels: {[key:string]: string};
+    
 
-    constructor(annotations: string[]=[], name: string="", namespace: string="", triggerType: string="", selfLink: string="") {
+    constructor(name: string="", namespace: string="", triggerType: string="", selfLink: string="", creationTimestamp="", annotations: string[]=[], labels: {[key:string]: string}={}) {
         this.annotations = annotations;
         this.name = name;
         this.namespace = namespace;
         this.triggerType = triggerType;
         this.selfLink = selfLink;
+        this.creationTimestamp = creationTimestamp;
+        this.labels = labels;
     }
 }
 
@@ -39,22 +44,25 @@ export class ScaledObjectSpec {
     pollingInterval: number;
     triggers: ScaledObjectTriggers[];
     scaleTargetRef: {[key:string]: string};
+    selector: {[key:string]: {[key:string]: string}};
     
-    constructor(cooldownPeriod: number=0, maxReplicaCount: number=0, minReplicaCount: number=0, pollingInterval: number=0, triggers: ScaledObjectTriggers[]=[], scaleTargetRef: {[key:string]: string}={}) {
+    constructor(cooldownPeriod: number=0, maxReplicaCount: number=0, minReplicaCount: number=0, pollingInterval: number=0, 
+        triggers: ScaledObjectTriggers[]=[], scaleTargetRef: {[key:string]: string}={}, selector: {[key:string]: {[key:string]: string}}={}) {
         this.cooldownPeriod = cooldownPeriod;
         this.maxReplicaCount = maxReplicaCount;
         this.minReplicaCount = minReplicaCount;
         this.pollingInterval = pollingInterval;
         this.triggers = triggers;
         this.scaleTargetRef = scaleTargetRef;
+        this.selector = selector;
     }
 }
 
 export class ScaledObjectTriggers {
     type: string;
-    metadata: {[key: string]: string};
+    metadata: {[key: string]: {[key: string]: string}};
 
-    constructor(type: string="", metadata: {[key: string]: string}={}) {
+    constructor(type: string="", metadata: {[key: string]: {[key: string]: string}}={}) {
         this.type = type;
         this.metadata = metadata;
     }

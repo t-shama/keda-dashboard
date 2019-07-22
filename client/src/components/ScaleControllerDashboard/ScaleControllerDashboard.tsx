@@ -48,7 +48,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 keda.status = data.status;
                 this.setState({ deployment: keda }); 
         });
-
+        
         await fetch('/api/logs/scaledecision')
             .then(res => res.text().then(text => 
                 { this.setState( {logs: this.formatLogs(text) }) }));

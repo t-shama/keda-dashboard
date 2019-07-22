@@ -108,16 +108,15 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
-    app.get(`/api/deployment/:deploymentName`, async (req, res) => {
-        let deploymentName = req.params.deploymentName;
-        let namespaceName = 'default';
+    app.get(`/api/namespace/:namespace/deployment/:name`, async (req, res) => {
+        let namespace = req.params.namespace;
+        let name = req.params.name;
 
-        if (deploymentName == undefined) {
-            deploymentName = 'sample-eventhub';
+        if (!namespace) {
+            namespace = 'default';
         }
 
         const cluster = kc.getCurrentCluster();
-
         if (!cluster) {
             res.status(501).json({
                 error: 'cluster not found'
@@ -126,12 +125,12 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/apis/apps/v1/namespaces/${namespaceName}/deployments/${deploymentName}`
+            url: `${cluster.server}/apis/apps/v1/namespaces/${namespace}/deployments/${name}`
         };
         kc.applyToRequest(opts);
-        var jsonStr = await request.get(opts);
+        const jsonStr = await request.get(opts);
 
-        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Type', 'application/json');
         res.send(jsonStr);
     });
 

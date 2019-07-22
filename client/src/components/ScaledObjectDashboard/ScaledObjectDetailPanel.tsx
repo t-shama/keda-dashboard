@@ -1,6 +1,7 @@
 import React from 'react';
-import { Paper, Typography, Grid, Chip, Box } from '@material-ui/core';
+import { Paper, Typography, Grid, Chip, Box, Divider } from '@material-ui/core';
 import { ScaledObjectModel } from '../../models/ScaledObjectModel';
+import { V1Deployment } from '@kubernetes/client-node';
 
 function handleClick() { }
 
@@ -52,18 +53,20 @@ const ScaledObjectDetail: React.FunctionComponent<{ detailName: string, detailVa
     );
 };
 
-const ScaledObjectDetailPanel: React.FunctionComponent<{ scaledObject: ScaledObjectModel}> = (props) => {
+const ScaledObjectDetailPanel: React.FunctionComponent<{ deployment: V1Deployment}> = (props) => {
     return (
         <Paper>
             <Box p={4}>
-                <ScaledObjectDetail detailName={"Name"} detailValue={props.scaledObject.metadata!.name}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Type"} detailValue={(props.scaledObject.triggers) ? props.scaledObject.triggers!.type:"not found"}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Namespace"} detailValue={props.scaledObject!.metadata!.namespace}></ScaledObjectDetail>
-                {/* <ScaledObjectDetail detailName={"Labels"} detailValueList={ props.scaledObject!.metadata!.labels}></ScaledObjectDetail> */}
-                <ScaledObjectDetail detailName={"Annotations"} detailValueList={props.scaledObject!.metadata!.annotations}></ScaledObjectDetail>
-                {/* <ScaledObjectDetail detailName={"Selector"} detailValueList={props.scaledObject.spec!.selector}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Creation Time"} detailValue={props.scaledObject.metadata!.creationTimestamp}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Last Active Time"} detailValue={props.scaledObject.metadata!.creationTimestamp}></ScaledObjectDetail> */}
+                <Typography variant="h6" id="Details">Details</Typography>
+                <Divider /> <br/>
+                <ScaledObjectDetail detailName={"Name"} detailValue={props.deployment.metadata!.name}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Type"} detailValue={(props.deployment.spec) ? "triggers":"not found"}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Namespace"} detailValue={props.deployment!.metadata!.namespace}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Labels"} detailValueList={ props.deployment!.metadata!.labels}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Annotations"} detailValueList={props.deployment!.metadata!.annotations}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Selector"} detailValueList={props.deployment.spec!.selector}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Creation Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Last Active Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaledObjectDetail>
             </Box>
         </Paper>
     );

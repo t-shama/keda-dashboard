@@ -1,31 +1,44 @@
 import React from 'react';
-import { Box, Paper, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import { RouteComponentProps } from 'react-router-dom';
 import {ScaledObjectModel } from '../../models/ScaledObjectModel';
-import { V1HorizontalPodAutoscaler } from '@kubernetes/client-node';
+import { V1HorizontalPodAutoscaler, V1Deployment } from '@kubernetes/client-node';
 import SideBarNav from '../SideBarNav';
 import LoadingView from '../LoadingView';
 import ReplicaDisplay from './ReplicaDisplay';
 import ScaledObjectDetailPanel from './ScaledObjectDetailPanel';
+import ScaleTargetPanel from './ScaleTargetPanel';
 
-export default class ScaledObjectDetailsDashboard extends React.Component<ScaledObjectDetailsDashboardProps, { loaded: boolean, name:string, scaledObject:ScaledObjectModel, hpa: V1HorizontalPodAutoscaler }> {
+export default class ScaledObjectDetailsDashboard extends React.Component<ScaledObjectDetailsDashboardProps, { loaded: boolean, name:string, 
+    namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler }> {
     constructor(props: ScaledObjectDetailsDashboardProps) {
         super(props);
 
         this.state = {
             loaded: false,
             name: this.props.match.params.name,
+            namespace: this.props.match.params.namespace,
             scaledObject: new ScaledObjectModel(),
+            deployment: new V1Deployment(),
             hpa: new V1HorizontalPodAutoscaler()
         };
     }
 
     async componentDidMount() {
-        this.setState({ loaded: true });
+        await fetch(`/api/namespace/${this.state.namespace}/deployment/${this.state.name}`)
+            .then(res => res.json())
+            .then(data => { 
+                console.log("here");
+                let deploy = new V1Deployment();
+                deploy.metadata = data.metadata;
+                deploy.spec = data.spec;
+                deploy.status = data.status;
+                this.setState({ deployment: deploy }); 
+        });
 
-        await fetch(`/api/deployment/${this.state.name}`)
-        .then(res => res.json())
-        .then(data => { console.log(data); this.setState({scaledObject: data })});
+        console.log(this.state.deployment);
+
+        this.setState({ loaded: true });
     }
 
     getDetailDashboard() {
@@ -33,13 +46,19 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             <div>
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ScaledObjectDetailPanel scaledObject={this.state.scaledObject}></ScaledObjectDetailPanel>                    
+                        <ScaledObjectDetailPanel deployment={this.state.deployment}></ScaledObjectDetailPanel>                    
                     </Grid>
                 </Grid>
                 
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ReplicaDisplay scaledObjectName={this.props.match.params.name}></ReplicaDisplay>            
+                        <ReplicaDisplay scaledObjectName={this.props.match.params.name} namespace={this.props.match.params.namespace}></ReplicaDisplay>            
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={12} lg={12}>
+                        <ScaleTargetPanel></ScaleTargetPanel>            
                     </Grid>
                 </Grid>
 
@@ -56,6 +75,6 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
     }
 }
 
-interface ScaledObjectDetailsDashboardProps extends RouteComponentProps<{ name: string }> {
+interface ScaledObjectDetailsDashboardProps extends RouteComponentProps<{ namespace: string, name: string }> {
 
 }

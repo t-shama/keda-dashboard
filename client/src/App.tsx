@@ -31,7 +31,7 @@ class App extends Component<{}, {}> {
                     <Switch>
                         <Route exact path="/" component={ScaleControllerDashboard}></Route>
                         <Route exact path="/scaled-objects" component={ScaledObjectsDashboard}></Route>
-                        <Route path="/scaled-objects/:name" component={ScaledObjectDetailsDashboard}></Route>
+                        <Route path="/scaled-objects/namespace/:namespace/scaled-object/:name" component={ScaledObjectDetailsDashboard}></Route>
                     </Switch>
                 </Router>
             </React.Fragment>

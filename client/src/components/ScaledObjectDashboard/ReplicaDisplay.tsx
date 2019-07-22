@@ -1,11 +1,11 @@
 import React from 'react';
-import { Typography, Paper, Box } from '@material-ui/core';
+import { Typography, Paper, Box, Divider } from '@material-ui/core';
 import { ResponsiveBar } from '@nivo/bar';
 
-export default class ReplicaDisplay extends React.Component<{scaledObjectName: string}, {currentReplicas: number, dataset: {[key: string]: number}[]}> {
+export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, dataset: {[key: string]: number}[]}> {
     replicaAutoscalingDataset: {[key: string]: number}[] = [];
 
-    constructor(props: {scaledObjectName: string}) {
+    constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);
 
         this.state = {
@@ -31,7 +31,7 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
     }
 
     async getCurrentReplicaCount() {
-        await fetch(`/api/deployment/${this.props.scaledObjectName}`)
+        await fetch(`/api/namespace/${this.props.namespace}/deployment/${this.props.scaledObjectName}`)
         .then(res => res.json())
         .then((data) => { 
             let currentReplicas = (data.spec!.replicas === undefined) ? 0:data.spec!.replicas;

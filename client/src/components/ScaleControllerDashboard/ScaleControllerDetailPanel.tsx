@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Grid, Chip, Box } from '@material-ui/core';
+import { Paper, Typography, Grid, Chip, Box, Divider } from '@material-ui/core';
 import { V1Deployment } from '@kubernetes/client-node';
 
 function handleClick() { }
@@ -56,6 +56,9 @@ const ScaleControllerDetailPanel: React.FunctionComponent<{ deployment: V1Deploy
     return (
         <Paper>
             <Box p={4}>
+                <Typography variant="h6" id="Details">Details</Typography>
+                <Divider /> <br/>
+
                 <ScaleControllerDetail detailName={"Name"} detailValue={props.deployment.metadata!.name}></ScaleControllerDetail>
                 <ScaleControllerDetail detailName={"Namespace"} detailValue={props.deployment!.metadata!.namespace}></ScaleControllerDetail>
                 <ScaleControllerDetail detailName={"Labels"} detailValueList={ props.deployment!.metadata!.labels}></ScaleControllerDetail>

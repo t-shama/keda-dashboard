@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, CssBaseline } from '@material-ui/core';
 import { V1Deployment } from '@kubernetes/client-node';
-import { Log } from '../../models/LogModel';
+import { LogModel } from '../../models/LogModel';
 import SideBarNav from '../SideBarNav';
 import LoadingView from '../LoadingView';
 import ScaleControllerDetailPanel from './ScaleControllerDetailPanel';
@@ -20,21 +20,23 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
 
     formatLogs(text: string) {
         let logs = text.split("\n");
-        let scaleControllerLogs: Log[] = [];
+        let scaleControllerLogs: LogModel[] = [];
 
         logs.forEach(function(log) {
             let searchLogRegex = new RegExp("time.*level.*msg");
             let splitLogRegex = new RegExp("(time|level|msg)=");
-            let removeDoubleQuotes = new RegExp("^\"|\"$");
+            let replicaCountRegex = new RegExp("(Scaled Object|Current Replicas|Source): ")
+            let removeDoubleQuotes = new RegExp("['\"]+");
             
-            if (searchLogRegex.test(log)) {
+            if (searchLogRegex.test(log) && !replicaCountRegex.test(log)) {
                 let logComponents = log.split(splitLogRegex);
-                let scaleControllerLog = new Log();
-                scaleControllerLog.msg = logComponents[6].replace(removeDoubleQuotes, "").trim();
+                let scaleControllerLog = new LogModel();
+                scaleControllerLog.msg = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaleControllerLog.source = logComponents[4].trim();
-                scaleControllerLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").trim();
+                scaleControllerLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaleControllerLog.infoLevel = logComponents[4].trim();
 
+                
                 scaleControllerLogs.push(scaleControllerLog);
             }
         });
@@ -58,6 +60,16 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 { this.setState( {logs: this.formatLogs(text) }) }));
 
         this.setState( { loaded:true });
+
+        try {
+            setInterval(async() => {
+                await fetch('/api/keda/logs')
+                .then(res => res.text().then(text => 
+                    { this.setState( {logs: this.formatLogs(text) }) }));
+            }, 5000);
+        } catch(e) {
+            console.log(e);
+        }
     }
 
     getScaleControllerDashboardContent() {
@@ -97,5 +109,5 @@ interface ScaleControllerDashboardProps {
 interface ScaleControllerDashboardState {
     loaded: boolean;
     deployment: V1Deployment;
-    logs: Log[];
+    logs: LogModel[];
 }

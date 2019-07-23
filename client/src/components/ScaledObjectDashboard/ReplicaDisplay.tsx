@@ -1,29 +1,67 @@
 import React from 'react';
 import { Typography, Paper, Box, Divider } from '@material-ui/core';
 import { ResponsiveBar } from '@nivo/bar';
+import { LogModel } from '../../models/LogModel';
+import { string } from 'prop-types';
 
-export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, dataset: {[key: string]: number}[]}> {
-    replicaAutoscalingDataset: {[key: string]: number}[] = [];
+export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
+    dataset: {[key: string]: any}[], logs: string}> {
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);
 
         this.state = {
             currentReplicas: 0,
-            dataset: []
+            dataset: [],
+            logs: ""
         }
     }
 
+    getMetricsFromLogs(text: string, name: string, namespace: string) {
+        let logs = text.split("\n");
+        let dataset: {[key: string]: number}[] = [];
+
+        for (let i = 0; i < logs.length; i+=8) {
+            let metricsInLog: {[key: string]: any} = {};
+            let searchLogRegex = new RegExp("time.*level.*msg");
+            let splitLogRegex = new RegExp("(time|level|msg)=");
+            let scaledObjectLogRegex = new RegExp(namespace + "/" + name + "|" + "keda-hpa-" + name);
+            let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
+            let removeDoubleQuotes = new RegExp("['\"]+");
+
+            if (searchLogRegex.test(logs[i]) && scaledObjectLogRegex.test(logs[i]) && replicaMetricsRegex.test(logs[i])) {
+                let logComponents = logs[i].split(splitLogRegex);
+                let metricInfo =  logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
+                let timestamp = logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
+
+                metricsInLog['timestamp'] = timestamp;
+                metricsInLog[name] = Number(metricInfo[1].split(": ")[1].trim());
+
+                dataset.push(metricsInLog);
+            }
+        }
+
+        console.log(dataset);
+
+        return dataset;
+    }
+
     async componentDidMount() {
-        await this.getCurrentReplicaCount();
-        await this.formatData();
-        this.setState({dataset: this.replicaAutoscalingDataset});
+        await fetch('/api/keda/logs')
+            .then(res => res.text().then(text => 
+                { this.setState( {logs: text }) }));
+
+        let updatedDataset = this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace);
+        this.setState({dataset: updatedDataset});
 
         try {
             setInterval(async() => {
-                await this.getCurrentReplicaCount();
-                await this.formatData();
-                this.setState({dataset: this.replicaAutoscalingDataset});
+                await fetch('/api/keda/logs')
+                .then(res => res.text().then(text => 
+                    { this.setState( {logs: text }) }));
+
+                let updatedDataset = this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace);
+                this.setState({dataset: updatedDataset});
             }, 30000);
         } catch(e) {
             console.log(e);
@@ -38,18 +76,6 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
             this.setState({currentReplicas: currentReplicas });
         });
     }
-
-    formatData() {
-        let dataAtTimestamp:{[key:string]: any} = {};
-        let date = new Date();
-        dataAtTimestamp["timestamp"] = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}T${date.getHours()}-${date.getMinutes()}-${date.getMilliseconds()}`;
-
-        dataAtTimestamp[this.props.scaledObjectName] = this.state.currentReplicas;
-
-        this.replicaAutoscalingDataset.push(dataAtTimestamp);
-        
-        console.log(this.replicaAutoscalingDataset);
-    }
     
     render() {
 
@@ -59,7 +85,7 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                     <Typography variant="h6" id="Replica Count">Replicas</Typography>
                     <div style={{ height: 400 }}>
                         <ResponsiveBar
-                            data={this.replicaAutoscalingDataset}
+                            data={this.state.dataset}
                             keys={[this.props.scaledObjectName]}
                             indexBy="timestamp"
                             margin={{ top: 50, right: 130, bottom: 50, left: 60 }}

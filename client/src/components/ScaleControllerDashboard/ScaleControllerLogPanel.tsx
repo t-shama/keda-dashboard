@@ -1,11 +1,11 @@
 import React from 'react';
 import { Paper, Box, Typography, Table, TableCell, TableBody, TableRow, TableHead, Grid } from '@material-ui/core';
-import { Log } from '../../models/LogModel';
+import { LogModel } from '../../models/LogModel';
 import Error from '@material-ui/icons/Error';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import WarningRounded from '@material-ui/icons/WarningRounded';
 
-const ScaleControllerLogRow: React.FunctionComponent<{ log: Log }> = (props) => {
+const ScaleControllerLogRow: React.FunctionComponent<{ log: LogModel }> = (props) => {
     let icon = <CheckCircle style={{color: '#4caf50'}}></CheckCircle>;
 
     if (props.log.infoLevel === "error") {
@@ -24,7 +24,7 @@ const ScaleControllerLogRow: React.FunctionComponent<{ log: Log }> = (props) => 
     );
 };
 
-const ScaleControllerLogPanel: React.FunctionComponent<{ logs: Log[] }> = (props) => {
+const ScaleControllerLogPanel: React.FunctionComponent<{ logs: LogModel[] }> = (props) => {
     return (
         <Paper>
             <Box p={4}>
@@ -37,7 +37,7 @@ const ScaleControllerLogPanel: React.FunctionComponent<{ logs: Log[] }> = (props
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left"></TableCell>
+                            <TableCell align="left">Status</TableCell>
                             <TableCell align="left">Message</TableCell>
                             <TableCell align="left">Source</TableCell>
                             <TableCell align="left">Time Stamp</TableCell>

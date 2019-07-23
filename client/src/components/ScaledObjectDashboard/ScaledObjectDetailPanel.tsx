@@ -53,20 +53,20 @@ const ScaledObjectDetail: React.FunctionComponent<{ detailName: string, detailVa
     );
 };
 
-const ScaledObjectDetailPanel: React.FunctionComponent<{ deployment: V1Deployment}> = (props) => {
+const ScaledObjectDetailPanel: React.FunctionComponent<{ deployment: V1Deployment, scaledObject: ScaledObjectModel}> = (props) => {
     return (
         <Paper>
             <Box p={4}>
                 <Typography variant="h6" id="Details">Details</Typography>
                 <Divider /> <br/>
                 <ScaledObjectDetail detailName={"Name"} detailValue={props.deployment.metadata!.name}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Type"} detailValue={(props.deployment.spec) ? "triggers":"not found"}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Type"} detailValue={(props.scaledObject.spec) ? props.scaledObject.spec.triggers[0].type:"not found"}></ScaledObjectDetail>
                 <ScaledObjectDetail detailName={"Namespace"} detailValue={props.deployment!.metadata!.namespace}></ScaledObjectDetail>
                 <ScaledObjectDetail detailName={"Labels"} detailValueList={ props.deployment!.metadata!.labels}></ScaledObjectDetail>
                 <ScaledObjectDetail detailName={"Annotations"} detailValueList={props.deployment!.metadata!.annotations}></ScaledObjectDetail>
                 <ScaledObjectDetail detailName={"Selector"} detailValueList={props.deployment.spec!.selector}></ScaledObjectDetail>
                 <ScaledObjectDetail detailName={"Creation Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaledObjectDetail>
-                <ScaledObjectDetail detailName={"Last Active Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaledObjectDetail>
+                <ScaledObjectDetail detailName={"Last Active Time"} detailValue={props.scaledObject.status.lastActiveTime}></ScaledObjectDetail>
             </Box>
         </Paper>
     );

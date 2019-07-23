@@ -7,10 +7,13 @@ import SideBarNav from '../SideBarNav';
 import LoadingView from '../LoadingView';
 import ReplicaDisplay from './ReplicaDisplay';
 import ScaledObjectDetailPanel from './ScaledObjectDetailPanel';
+import TriggerTable from './TriggerTable';
 import ScaleTargetPanel from './ScaleTargetPanel';
+import ScaledObjectLogPanel from './ScaledObjectLogPanel';
 
 export default class ScaledObjectDetailsDashboard extends React.Component<ScaledObjectDetailsDashboardProps, { loaded: boolean, name:string, 
-    namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler }> {
+    namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler, logs: string[] }> {
+
     constructor(props: ScaledObjectDetailsDashboardProps) {
         super(props);
 
@@ -20,7 +23,8 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             namespace: this.props.match.params.namespace,
             scaledObject: new ScaledObjectModel(),
             deployment: new V1Deployment(),
-            hpa: new V1HorizontalPodAutoscaler()
+            hpa: new V1HorizontalPodAutoscaler(),
+            logs: []
         };
     }
 
@@ -28,7 +32,6 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
         await fetch(`/api/namespace/${this.state.namespace}/deployment/${this.state.name}`)
             .then(res => res.json())
             .then(data => { 
-                console.log("here");
                 let deploy = new V1Deployment();
                 deploy.metadata = data.metadata;
                 deploy.spec = data.spec;
@@ -36,7 +39,13 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
                 this.setState({ deployment: deploy }); 
         });
 
-        console.log(this.state.deployment);
+        await fetch(`/api/namespace/${this.state.namespace}/scaledobjects/${this.state.name}`)
+            .then(res => res.json())
+            .then(data => this.setState({ scaledObject: data }));
+
+        await fetch(`/api/namespace/${this.state.namespace}/hpa/keda-hpa-${this.state.name}`)
+            .then(res => res.json())
+            .then((json) => this.setState({ hpa: json }));
 
         this.setState({ loaded: true });
     }
@@ -46,7 +55,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             <div>
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ScaledObjectDetailPanel deployment={this.state.deployment}></ScaledObjectDetailPanel>                    
+                        <ScaledObjectDetailPanel deployment={this.state.deployment} scaledObject={this.state.scaledObject}></ScaledObjectDetailPanel>                    
                     </Grid>
                 </Grid>
                 
@@ -58,7 +67,19 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
 
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ScaleTargetPanel></ScaleTargetPanel>            
+                        <ScaleTargetPanel hpa={this.state.hpa}></ScaleTargetPanel>            
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={12} lg={12}>
+                        <TriggerTable scaledObject={this.state.scaledObject}></TriggerTable>            
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={5}>
+                    <Grid item xs={12} md={12} lg={12}>
+                        <ScaledObjectLogPanel> </ScaledObjectLogPanel>            
                     </Grid>
                 </Grid>
 

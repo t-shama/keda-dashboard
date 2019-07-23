@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, CssBaseline } from '@material-ui/core';
 import { V1Deployment } from '@kubernetes/client-node';
-import { ScaleControllerLog } from '../../models/ScaleControllerLog';
+import { Log } from '../../models/LogModel';
 import SideBarNav from '../SideBarNav';
 import LoadingView from '../LoadingView';
 import ScaleControllerDetailPanel from './ScaleControllerDetailPanel';
@@ -20,7 +20,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
 
     formatLogs(text: string) {
         let logs = text.split("\n");
-        let scaleControllerLogs: ScaleControllerLog[] = [];
+        let scaleControllerLogs: Log[] = [];
 
         logs.forEach(function(log) {
             let searchLogRegex = new RegExp("time.*level.*msg");
@@ -29,8 +29,12 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
             
             if (searchLogRegex.test(log)) {
                 let logComponents = log.split(splitLogRegex);
-                let scaleControllerLog = new ScaleControllerLog(logComponents[6].replace(removeDoubleQuotes, "").trim(), logComponents[4].trim(), 
-                                        logComponents[2].replace(removeDoubleQuotes, "").trim(), logComponents[4].trim());
+                let scaleControllerLog = new Log();
+                scaleControllerLog.msg = logComponents[6].replace(removeDoubleQuotes, "").trim();
+                scaleControllerLog.source = logComponents[4].trim();
+                scaleControllerLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").trim();
+                scaleControllerLog.infoLevel = logComponents[4].trim();
+
                 scaleControllerLogs.push(scaleControllerLog);
             }
         });
@@ -49,7 +53,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 this.setState({ deployment: keda }); 
         });
         
-        await fetch('/api/logs/scaledecision')
+        await fetch('/api/keda/logs')
             .then(res => res.text().then(text => 
                 { this.setState( {logs: this.formatLogs(text) }) }));
 
@@ -93,5 +97,5 @@ interface ScaleControllerDashboardProps {
 interface ScaleControllerDashboardState {
     loaded: boolean;
     deployment: V1Deployment;
-    logs: ScaleControllerLog[];
+    logs: Log[];
 }

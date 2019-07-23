@@ -60,9 +60,11 @@ export class ScaledObjectSpec {
 
 export class ScaledObjectTriggers {
     type: string;
+    name: string;
     metadata: {[key: string]: {[key: string]: string}};
 
-    constructor(type: string="", metadata: {[key: string]: {[key: string]: string}}={}) {
+    constructor(name: string="", type: string="", metadata: {[key: string]: {[key: string]: string}}={}) {
+        this.name = name;
         this.type = type;
         this.metadata = metadata;
     }

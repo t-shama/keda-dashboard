@@ -26,8 +26,9 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
-    app.get(`/api/scaledobjects/:name`, async (req, res) => {
+    app.get(`/api/namespace/:namespace/scaledobjects/:name`, async (req, res) => {
         let name = req.params.name;
+        let namespace = req.params.namespace
 
         const cluster = kc.getCurrentCluster();
         if (!cluster) {
@@ -37,7 +38,7 @@ export function setupApis(app: Express) {
             return;
         }
         const opts: request.Options = {
-            url: `${cluster.server}/apis/keda.k8s.io/v1alpha1/scaledobjects/${name}`
+            url: `${cluster.server}/apis/keda.k8s.io/v1alpha1/namespaces/${namespace}/scaledobjects/${name}`
         };
         kc.applyToRequest(opts);
         const jsonStr = await request.get(opts);
@@ -153,7 +154,7 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
-    app.get('/api/logs', async (req, res) => {
+    app.get('/api/keda/logs', async (req, res) => {
         const cluster = kc.getCurrentCluster();
 
         if (!cluster) {

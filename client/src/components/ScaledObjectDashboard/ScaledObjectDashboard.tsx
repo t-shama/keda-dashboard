@@ -74,7 +74,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             .then(res => res.json())
             .then((json) => this.setState({ hpa: json }));
         
-        await fetch('/api/keda/logs')
+        await fetch('/api/logs')
             .then(res => res.text().then(text => 
                 { this.setState( {logs: this.formatLogs(text, this.state.name, this.state.namespace) }) }));
 
@@ -82,7 +82,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
 
         try {
             setInterval(async() => {
-                await fetch('/api/keda/logs')
+                await fetch('/api/logs')
                 .then(res => res.text().then(text => 
                     { this.setState( {logs: this.formatLogs(text, this.state.name, this.state.namespace) }) }));
             }, 5000);

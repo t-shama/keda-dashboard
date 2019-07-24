@@ -5,27 +5,78 @@ import { Container, Drawer, CssBaseline, AppBar, Toolbar, List, Typography, Divi
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { NavLink } from '../models/NavLink';
-import { BrowserRouter as Router, Link } from 'react-router-dom'
+import { NavigationLinkModel } from '../models/NavigationLinks';
+import {  NavLink } from 'react-router-dom'
+import { ScaledObjectModel } from '../models/ScaledObjectModel';
 
-const NavItem: React.FunctionComponent<{text: string, to: string}> = (props) => {
+export default class SideBarNav extends React.Component<{content: any}, {scaledObjects: ScaledObjectModel[]}> {
+  constructor(props: {content: any}) {
+    super(props);
+
+    this.state = {
+      scaledObjects: []
+    }
+  }
+
+  componentDidMount() {
+    fetch('/api/scaledobjects')
+        .then(res => res.json())
+        .then(({ items }) => this.setState({ scaledObjects: items }));
+  }
+
+  getScaledObjectSublinks() {
+    let sublinks: NavigationLinkModel[] = [];
+
+    for (let i = 0; i < this.state.scaledObjects.length; i++) {
+      if (this.state.scaledObjects[i].metadata) {
+        let sublink = '/scaled-objects/namespace/' + this.state.scaledObjects[i].metadata.namespace + '/scaled-object/' + this.state.scaledObjects[i].metadata.name;
+        sublinks.push(new NavigationLinkModel(this.state.scaledObjects[i].metadata.name, sublink));
+      }
+    }
+
+    return sublinks;
+  }
+
+  getNavLinks() {
+    return [
+      new NavigationLinkModel("Overview", "/"), 
+      new NavigationLinkModel("Scaled Objects", "/scaled-objects", this.getScaledObjectSublinks())
+    ];
+  }
+
+  render() {
     return (
-      <Router>
-        <Link to={props.to} style={{ textDecoration: 'none', color:'black' }}>
-          <ListItem button key={props.text}> 
-            <ListItemText primary={props.text} />
-          </ListItem>
-        </Link>
-      </Router>
+      <SideNav content={this.props.content} navLinks={this.getNavLinks()}></SideNav>
     );
+  }
+}
+
+const DrawerListItem: React.FunctionComponent<{navLink: NavigationLinkModel}> = (props) => {
+  const classes = useStyles();
+
+  if (props.navLink.sublinks) {
+    return (
+      <div>
+        <ListItem button component={NavLink} to={props.navLink.link} key={props.navLink.text}> 
+          <ListItemText primary={props.navLink.text} />
+        </ListItem>
+        { props.navLink.sublinks.map( 
+          (link: NavigationLinkModel) =>
+          <ListItem button component={NavLink} to={link.link} key={link.text} className={classes.nested}> 
+            <ListItemText primary={link.text} />
+          </ListItem>
+        )}
+      </div>
+  );}
+
+  return (
+    <ListItem button component={NavLink} to={props.navLink.link} key={props.navLink.text}> 
+      <ListItemText primary={props.navLink.text} />
+    </ListItem>
+  );
 };
 
-const SideBarNav: React.FunctionComponent<{ content: any }> = (props) => {
-    const navLinks:NavLink[] = [
-      {text: "Overview", link: "/"}, 
-      {text: "Scaled Objects", link: "/scaled-objects"}
-    ];
-    
+const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkModel[] }> = (props) => {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
@@ -68,7 +119,7 @@ const SideBarNav: React.FunctionComponent<{ content: any }> = (props) => {
                 <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap>
-                KEDA Dashboard
+                KEDA
             </Typography>
             </Toolbar>
         </AppBar>
@@ -90,7 +141,7 @@ const SideBarNav: React.FunctionComponent<{ content: any }> = (props) => {
             <Divider />
 
             <List>
-              { navLinks.map((link: NavLink) => <NavItem text={link.text} to={link.link}></NavItem>) }
+              { props.navLinks.map((link: NavigationLinkModel) => <DrawerListItem navLink={link}></DrawerListItem>) }
             </List>
         </Drawer>
 
@@ -157,8 +208,9 @@ const useStyles = makeStyles((theme: Theme) =>
         duration: theme.transitions.duration.enteringScreen,
       }),
       marginLeft: 0,
-    }
+    },
+    nested: {
+      paddingLeft: theme.spacing(4),
+    },
   }),
 );
-
-export default SideBarNav;

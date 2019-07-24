@@ -55,7 +55,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 this.setState({ deployment: keda }); 
         });
         
-        await fetch('/api/keda/logs')
+        await fetch('/api/logs')
             .then(res => res.text().then(text => 
                 { this.setState( {logs: this.formatLogs(text) }) }));
 
@@ -63,7 +63,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
 
         try {
             setInterval(async() => {
-                await fetch('/api/keda/logs')
+                await fetch('/api/logs')
                 .then(res => res.text().then(text => 
                     { this.setState( {logs: this.formatLogs(text) }) }));
             }, 5000);

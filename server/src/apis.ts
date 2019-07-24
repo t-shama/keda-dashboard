@@ -46,24 +46,6 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
-    app.get('/api/pods', async (_, res) => {
-        const cluster = kc.getCurrentCluster();
-        if (!cluster) {
-            res.status(501).json({
-                error: 'cluster not found'
-            });
-            return;
-        }
-
-        const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/default/pods`
-        };
-        kc.applyToRequest(opts);
-        const jsonStr = await request.get(opts);
-        res.setHeader('Content-Type', 'application/json');
-        res.send(jsonStr);
-    });
-
     app.get('/api/hpa', async (_, res) => {
         const cluster = kc.getCurrentCluster();
         if (!cluster) {
@@ -154,7 +136,7 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
-    app.get('/api/keda/logs', async (req, res) => {
+    app.get('/api/logs', async (req, res) => {
         const cluster = kc.getCurrentCluster();
 
         if (!cluster) {
@@ -165,7 +147,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-cb92v/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-q9597/log`
         };
         kc.applyToRequest(opts);
         let logs = await request.get(opts);
@@ -184,7 +166,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-cb92v/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-q9597/log`
         };
         kc.applyToRequest(opts);
         const logs = await request.get(opts);
@@ -192,15 +174,15 @@ export function setupApis(app: Express) {
 
         let logsArray = logs.split("\n");
         let scaleDecisionLogs: string[] = [];
-        let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
+        let replicaMetricsRegex = new RegExp("Metric Type: Replica Count; .*");
 
         logsArray.forEach((element:string) => {
             if (replicaMetricsRegex.test(element)) {
-                scaleDecisionLogs.push(element + "\n");
+                scaleDecisionLogs.push(element);
             }
         });
 
-        res.send(scaleDecisionLogs.toString());
+        res.send(scaleDecisionLogs.join("\n"));
     });
 
     app.get('/api/metrics', async (req, res) => {

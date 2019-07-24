@@ -20,19 +20,20 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
         let logs = text.split("\n");
         let dataset: {[key: string]: number}[] = [];
 
-        for (let i = 0; i < logs.length; i+=120) {
-            let metricsInLog: {[key: string]: any} = {};
+        // (logs.length-1)%60
+        for (let i = 0; i < logs.length; i+=30) {
             let splitLogRegex = new RegExp("(time|level|msg)=");
             let scaledObjectLogRegex = new RegExp(namespace + "/" + name + "|" + "keda-hpa-" + name);
             let removeDoubleQuotes = new RegExp("['\"]+");
 
             if (scaledObjectLogRegex.test(logs[i])) {
+                let metricsInLog: {[key: string]: any} = {};
                 let logComponents = logs[i].split(splitLogRegex);
                 let metricInfo =  logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
                 let timestamp = logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
 
                 metricsInLog['timestamp'] = timestamp;
-                metricsInLog[name] = Number(metricInfo[1].split(": ")[1].trim());
+                metricsInLog[name] = Number(metricInfo[2].split(": ")[1].trim());
 
                 if (dataset.length >= this.numBarsInGraph) {
                     while (dataset.length >= this.numBarsInGraph) {

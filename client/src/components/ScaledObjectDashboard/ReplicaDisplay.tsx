@@ -1,11 +1,10 @@
 import React from 'react';
 import { Typography, Paper, Box, Divider } from '@material-ui/core';
 import { ResponsiveBar } from '@nivo/bar';
-import { LogModel } from '../../models/LogModel';
-import { string } from 'prop-types';
 
 export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
     dataset: {[key: string]: any}[], logs: string}> {
+    private numBarsInGraph:number = 24;
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);
@@ -21,15 +20,13 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
         let logs = text.split("\n");
         let dataset: {[key: string]: number}[] = [];
 
-        for (let i = 0; i < logs.length; i+=8) {
+        for (let i = 0; i < logs.length; i+=120) {
             let metricsInLog: {[key: string]: any} = {};
-            let searchLogRegex = new RegExp("time.*level.*msg");
             let splitLogRegex = new RegExp("(time|level|msg)=");
             let scaledObjectLogRegex = new RegExp(namespace + "/" + name + "|" + "keda-hpa-" + name);
-            let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
             let removeDoubleQuotes = new RegExp("['\"]+");
 
-            if (searchLogRegex.test(logs[i]) && scaledObjectLogRegex.test(logs[i]) && replicaMetricsRegex.test(logs[i])) {
+            if (scaledObjectLogRegex.test(logs[i])) {
                 let logComponents = logs[i].split(splitLogRegex);
                 let metricInfo =  logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
                 let timestamp = logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
@@ -37,31 +34,32 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                 metricsInLog['timestamp'] = timestamp;
                 metricsInLog[name] = Number(metricInfo[1].split(": ")[1].trim());
 
+                if (dataset.length >= this.numBarsInGraph) {
+                    while (dataset.length >= this.numBarsInGraph) {
+                        dataset.shift();
+                    }
+                }
                 dataset.push(metricsInLog);
             }
         }
-
-        console.log(dataset);
 
         return dataset;
     }
 
     async componentDidMount() {
-        await fetch('/api/keda/logs')
+        await fetch('/api/logs/metrics')
             .then(res => res.text().then(text => 
                 { this.setState( {logs: text }) }));
 
-        let updatedDataset = this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace);
-        this.setState({dataset: updatedDataset});
+        this.setState({dataset: this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace)});
 
         try {
             setInterval(async() => {
-                await fetch('/api/keda/logs')
+                await fetch('/api/logs/metrics')
                 .then(res => res.text().then(text => 
                     { this.setState( {logs: text }) }));
 
-                let updatedDataset = this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace);
-                this.setState({dataset: updatedDataset});
+                this.setState({dataset: this.getMetricsFromLogs(this.state.logs, this.props.scaledObjectName, this.props.namespace)});
             }, 30000);
         } catch(e) {
             console.log(e);

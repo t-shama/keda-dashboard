@@ -173,7 +173,7 @@ export function setupApis(app: Express) {
         res.send(logs);
     });
 
-    app.get('/api/logs/scaledecision', async (req, res) => {
+    app.get('/api/logs/metrics', async (req, res) => {
         const cluster = kc.getCurrentCluster();
 
         if (!cluster) {
@@ -192,11 +192,10 @@ export function setupApis(app: Express) {
 
         let logsArray = logs.split("\n");
         let scaleDecisionLogs: string[] = [];
-        let regexConst = new RegExp('msg.*Successfully.*deployment|Error getting scale decision|scaledObject.*cooling down|Watching ScaledObject:');
+        let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
 
         logsArray.forEach((element:string) => {
-            if (regexConst.test(element)) {
-
+            if (replicaMetricsRegex.test(element)) {
                 scaleDecisionLogs.push(element + "\n");
             }
         });

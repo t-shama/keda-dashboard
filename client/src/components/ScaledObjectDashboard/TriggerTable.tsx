@@ -10,8 +10,8 @@ const TriggerTableRow: React.FunctionComponent<{trigger: ScaledObjectTriggers}> 
             <TableCell align="left">{props.trigger.type}</TableCell>
             <TableCell align="left">
             {
-                Object.keys(props.trigger.metadata).map(key => 
-                    <p>{key + ": " + props.trigger.metadata[key] }</p>
+                Object.keys(props.trigger.metadata).map((key, index) => 
+                    <p key={index}>{key + ": " + props.trigger.metadata[key] }</p>
                 )}
             </TableCell>
         </TableRow>
@@ -19,10 +19,6 @@ const TriggerTableRow: React.FunctionComponent<{trigger: ScaledObjectTriggers}> 
 }
 
 export default class TriggerTable  extends React.Component<{scaledObject: ScaledObjectModel}, {}> {
-    constructor(props: {scaledObject: ScaledObjectModel}) {
-        super(props);
-    }
-
     render () {
         return (
             <Paper>
@@ -38,7 +34,7 @@ export default class TriggerTable  extends React.Component<{scaledObject: Scaled
                         </TableHead>
 
                         <TableBody>
-                                { this.props.scaledObject.spec.triggers.map(trigger => <TriggerTableRow trigger={trigger}></TriggerTableRow> )}
+                                { this.props.scaledObject.spec.triggers.map((trigger, index) => <TriggerTableRow trigger={trigger} key={index}></TriggerTableRow> )}
                         </TableBody>
                     </Table>
                 </Box>

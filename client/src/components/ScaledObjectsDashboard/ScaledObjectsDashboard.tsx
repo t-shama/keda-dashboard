@@ -26,11 +26,14 @@ export default class ScaledObjectsDashboard extends React.Component<{}, {loaded:
     render() {
         if (this.state.loaded) {
             let table = <ScaledObjectsTable scaledObjects={this.state.scaledObjects}/>
+            let breadcrumbLinks = [
+                {text: 'Scaled Objects', link: '/scaled-objects'}
+            ];
 
             return (
                 <React.Fragment>
                     <CssBaseline /> 
-                    <SideBarNav content={table}></SideBarNav>         
+                    <SideBarNav content={table} breadcrumbs={breadcrumbLinks}></SideBarNav>         
                 </React.Fragment>
             );
         } else {

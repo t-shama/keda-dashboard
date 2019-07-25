@@ -26,10 +26,6 @@ const ScaledObjectLogRow: React.FunctionComponent<{ log: LogModel }> = (props) =
 };
 
 export default class ScaledObjectLogPanel extends React.Component<{logs: LogModel[]}, {}> {
-    constructor(props: {logs: LogModel[]}) {
-        super(props);
-    }
-
     render() {
         return (
             <Paper>
@@ -42,7 +38,7 @@ export default class ScaledObjectLogPanel extends React.Component<{logs: LogMode
                     
                     <Table size="small">
                         <TableHead>
-                            <TableRow>
+                            <TableRow key={'header-row'}>
                                 <TableCell align="left">Status</TableCell>
                                 <TableCell align="left">Input Metric</TableCell>
                                 <TableCell align="left">Source</TableCell>
@@ -52,7 +48,7 @@ export default class ScaledObjectLogPanel extends React.Component<{logs: LogMode
                         </TableHead>
                         
                         <TableBody>
-                            { this.props.logs.map(log => <ScaledObjectLogRow log={log}/> )}
+                            { this.props.logs.map((log, index) => <ScaledObjectLogRow key={index} log={log}/> )}
                         </TableBody>
                     </Table>
                 </Box>

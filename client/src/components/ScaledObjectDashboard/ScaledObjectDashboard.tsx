@@ -36,7 +36,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
         logs.forEach(function(log) {
             let searchLogRegex = new RegExp("time.*level.*msg");
             let splitLogRegex = new RegExp("(time|level|msg)=");
-            let scaledObjectLogRegex = new RegExp(namespace + "/" + name + "|" + "keda-hpa-" + name);
+            let scaledObjectLogRegex = new RegExp(`${namespace}/${name}|keda-hpa-${name}`);
             let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
             let removeDoubleQuotes = new RegExp("['\"]+");
             
@@ -129,8 +129,13 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
     }
     
     render() {
+        let breadcrumbLinks = [
+            {text: 'Scaled Objects', link: '/scaled-objects'},
+            {text: this.state.name, link: '/scaled-objects/namespace/' + this.state.namespace + '/scaled-object/' + this.state.name}
+        ];
+
         if (this.state.loaded) {
-            return <SideBarNav content={this.getDetailDashboard()}/>
+            return <SideBarNav content={this.getDetailDashboard()} breadcrumbs={breadcrumbLinks}/>
         } else {
             return <LoadingView></LoadingView>
         }

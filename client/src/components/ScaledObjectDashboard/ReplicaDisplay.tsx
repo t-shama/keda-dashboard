@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Paper, Box, Divider } from '@material-ui/core';
+import { Typography, Paper, Box } from '@material-ui/core';
 import { ResponsiveBar } from '@nivo/bar';
 
 export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
@@ -21,9 +21,9 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
         let dataset: {[key: string]: number}[] = [];
 
         // (logs.length-1)%60
-        for (let i = 0; i < logs.length; i+=30) {
+        for (let i = 0; i < logs.length; i+=120) {
             let splitLogRegex = new RegExp("(time|level|msg)=");
-            let scaledObjectLogRegex = new RegExp(namespace + "/" + name + "|" + "keda-hpa-" + name);
+            let scaledObjectLogRegex = new RegExp(`${namespace}/${name}|keda-hpa-${name}`);
             let removeDoubleQuotes = new RegExp("['\"]+");
 
             if (scaledObjectLogRegex.test(logs[i])) {

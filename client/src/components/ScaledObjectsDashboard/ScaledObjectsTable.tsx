@@ -25,12 +25,12 @@ class ScaledObjectRow extends React.Component<{ scaledObject: ScaledObjectModel 
                 <TableCell align="left"> { this.props.scaledObject.metadata.namespace }</TableCell>
                 <TableCell align="left">{ this.props.scaledObject.metadata.name }</TableCell>
                 <TableCell align="left">{ (this.state.hpa.status !== undefined) ? 
-                                            "(" + this.state.hpa.status.currentReplicas + "/" + this.state.hpa.status.desiredReplicas + ")": "not found" }</TableCell>
+                                            `(${this.state.hpa.status.currentReplicas}/${this.state.hpa.status.desiredReplicas})`: "not found" }</TableCell>
                 <TableCell align="left">{ this.props.scaledObject.status.lastActiveTime }</TableCell>
                 <TableCell align="left">{ this.props.scaledObject.spec.triggers[0].type}</TableCell>
                 <TableCell align="left">{ "keda-hpa-" + this.props.scaledObject.metadata.name}</TableCell>
                 <TableCell align="left">{ (this.state.hpa.spec !== undefined) ? 
-                                           this.state.hpa.spec.scaleTargetRef.kind + "/" + this.state.hpa.spec.scaleTargetRef.name: "not found"}</TableCell>
+                                            `${this.state.hpa.spec.scaleTargetRef.kind }/${this.state.hpa.spec.scaleTargetRef.name}`: "not found"}</TableCell>
             </TableRow>
         );
     }
@@ -59,7 +59,7 @@ export default class ScaledObjectsTable extends React.Component<{scaledObjects: 
                             
                             <TableBody>
                                 {this.props.scaledObjects
-                                        .map(o => <ScaledObjectRow scaledObject={o}/>)}
+                                        .map((o, index) => <ScaledObjectRow scaledObject={o} key={index}/>)}
                             </TableBody>
                         </Table>
                         </Box>

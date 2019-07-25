@@ -3,7 +3,7 @@ import { CssBaseline } from '@material-ui/core';
 import { Style } from 'jss';
 import ScaleControllerDashboard from './components/ScaleControllerDashboard/ScaleControllerDashboard';
 import ScaledObjectsDashboard from './components/ScaledObjectsDashboard/ScaledObjectsDashboard';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ScaledObjectDetailsDashboard from './components/ScaledObjectDashboard/ScaledObjectDashboard';
 
 class App extends Component<{}, {}> {

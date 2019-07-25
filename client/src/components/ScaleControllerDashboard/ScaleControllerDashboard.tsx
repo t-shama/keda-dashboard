@@ -35,7 +35,6 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 scaleControllerLog.source = logComponents[4].trim();
                 scaleControllerLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaleControllerLog.infoLevel = logComponents[4].trim();
-
                 
                 scaleControllerLogs.push(scaleControllerLog);
             }
@@ -91,10 +90,14 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
 
     render() {
         if (this.state.loaded) {
+            let breadcrumbLinks = [
+                {text: 'Overview', link: '/'}
+            ];
+
             return (
                 <React.Fragment>
                    <CssBaseline /> 
-                   <SideBarNav content={this.getScaleControllerDashboardContent()}></SideBarNav>         
+                   <SideBarNav content={this.getScaleControllerDashboardContent()} breadcrumbs={breadcrumbLinks}></SideBarNav>         
                </React.Fragment>
             );
         } else {

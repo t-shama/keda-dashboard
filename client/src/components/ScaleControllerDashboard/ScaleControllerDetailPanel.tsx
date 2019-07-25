@@ -14,10 +14,10 @@ function listChips(detailName: string, list: Object) {
 
     switch(detailName) {
         case "Labels": {
-            return listItems.map((item:string) => <Chip label={item + ": " + listObject[item]} onClick={handleClick}/>);
+            return listItems.map((item, index) => <Chip label={item + ": " + listObject[item]} onClick={handleClick} key={index}/>);
         }
         case "Annotations": {
-            return listItems.map((item) => <Chip label={item} onClick={handleClick}/>);
+            return listItems.map((item, index) => <Chip label={item} onClick={handleClick} key={index} />);
         }
         case "Selector": {
             listObject = listObject["matchLabels"];
@@ -26,7 +26,7 @@ function listChips(detailName: string, list: Object) {
             for (let key in listObject) {
                 listItems.push(key);
             }
-            return listItems.map((item: string) => <Chip label={item + ": " + listObject[item]}  onClick={handleClick}/>)
+            return listItems.map((item, index) => <Chip label={item + ": " + listObject[item]}  onClick={handleClick} key={index}/>)
         }
     }
 }

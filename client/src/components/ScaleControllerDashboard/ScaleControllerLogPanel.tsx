@@ -5,7 +5,7 @@ import Error from '@material-ui/icons/Error';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import WarningRounded from '@material-ui/icons/WarningRounded';
 
-const ScaleControllerLogRow: React.FunctionComponent<{ log: LogModel }> = (props) => {
+const ScaleControllerLogRow: React.FunctionComponent<{ log: LogModel, id:number }> = (props) => {
     let icon = <CheckCircle style={{color: '#4caf50'}}></CheckCircle>;
 
     if (props.log.infoLevel === "error") {
@@ -15,7 +15,7 @@ const ScaleControllerLogRow: React.FunctionComponent<{ log: LogModel }> = (props
     }
 
     return (
-        <TableRow key={props.log.timestamp}>
+        <TableRow key={props.id}>
             <TableCell align="left"> { icon }</TableCell>
             <TableCell align="left">{props.log.msg}</TableCell>
             <TableCell align="left">{props.log.source}</TableCell>
@@ -44,7 +44,7 @@ const ScaleControllerLogPanel: React.FunctionComponent<{ logs: LogModel[] }> = (
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                            { props.logs.map(log => <ScaleControllerLogRow log={log}></ScaleControllerLogRow> )}
+                            { props.logs.map((log, index) => <ScaleControllerLogRow log={log} key={index} id={index}></ScaleControllerLogRow> )}
                     </TableBody>
                 </Table>
             </Box>

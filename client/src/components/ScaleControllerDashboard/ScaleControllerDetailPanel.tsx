@@ -13,9 +13,6 @@ function listChips(detailName: string, list: Object) {
     }
 
     switch(detailName) {
-        case "Labels": {
-            return listItems.map((item, index) => <Chip label={item + ": " + listObject[item]} onClick={handleClick} key={index}/>);
-        }
         case "Annotations": {
             return listItems.map((item, index) => <Chip label={item} onClick={handleClick} key={index} />);
         }
@@ -27,6 +24,9 @@ function listChips(detailName: string, list: Object) {
                 listItems.push(key);
             }
             return listItems.map((item, index) => <Chip label={item + ": " + listObject[item]}  onClick={handleClick} key={index}/>)
+        }
+        default: {
+            return listItems.map((item, index) => <Chip label={item + ": " + listObject[item]} onClick={handleClick} key={index}/>);
         }
     }
 }
@@ -52,7 +52,7 @@ const ScaleControllerDetail: React.FunctionComponent<{ detailName: string, detai
     );
 };
 
-const ScaleControllerDetailPanel: React.FunctionComponent<{ deployment: V1Deployment}> = (props) => {
+const ScaleControllerDetailPanel: React.FunctionComponent<{ deployment: V1Deployment, scaleDecisionTime: string}> = (props) => {
     return (
         <Paper>
             <Box p={4}>
@@ -65,7 +65,7 @@ const ScaleControllerDetailPanel: React.FunctionComponent<{ deployment: V1Deploy
                 <ScaleControllerDetail detailName={"Annotations"} detailValueList={props.deployment!.metadata!.annotations}></ScaleControllerDetail>
                 <ScaleControllerDetail detailName={"Selector"} detailValueList={props.deployment.spec!.selector}></ScaleControllerDetail>
                 <ScaleControllerDetail detailName={"Creation Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaleControllerDetail>
-                <ScaleControllerDetail detailName={"Last Scale Time"} detailValue={props.deployment.metadata!.creationTimestamp}></ScaleControllerDetail>
+                <ScaleControllerDetail detailName={"Last Scale Time"} detailValue={(props.scaleDecisionTime !== "") ? props.scaleDecisionTime:"not available"}></ScaleControllerDetail>
             </Box>
         </Paper>
     );

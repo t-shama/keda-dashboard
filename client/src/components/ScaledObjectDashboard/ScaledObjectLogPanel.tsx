@@ -14,10 +14,11 @@ const ScaledObjectLogRow: React.FunctionComponent<{ log: LogModel }> = (props) =
         icon = <WarningRounded style={{color: '#fdd835'}}></WarningRounded>
     }
 
+
     return (
         <TableRow key={props.log.timestamp}>
             <TableCell align="left"> { icon }</TableCell>
-            <TableCell align="left"> tbd </TableCell>
+            <TableCell align="left"> {`${props.log.inputMetric}`} </TableCell>
             <TableCell align="left">{props.log.source}</TableCell>
             <TableCell align="left">{props.log.timestamp}</TableCell>
             <TableCell align="left">{props.log.msg}</TableCell>

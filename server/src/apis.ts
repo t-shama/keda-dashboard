@@ -67,7 +67,6 @@ export function setupApis(app: Express) {
     app.get(`/api/namespace/:namespace/hpa/:name`, async (req, res) => {
         let namespace = req.params.namespace;
         let name = req.params.name;
-        console.log(name);
 
         if (!namespace) {
             namespace = 'default';
@@ -147,7 +146,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-q9597/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=500`
         };
         kc.applyToRequest(opts);
         let logs = await request.get(opts);
@@ -166,7 +165,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-c4dcd7f47-q9597/log`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=500`
         };
         kc.applyToRequest(opts);
         const logs = await request.get(opts);
@@ -185,7 +184,10 @@ export function setupApis(app: Express) {
         res.send(scaleDecisionLogs.join("\n"));
     });
 
-    app.get('/api/metrics', async (req, res) => {
+    app.get(`/api/namespace/:namespace/metrics/:metricsname`, async (req, res) => {
+        let namespace = req.params.namespace;
+        let metricsname = req.params.metricsname;
+
         const cluster = kc.getCurrentCluster();
 
         if (!cluster) {
@@ -196,7 +198,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/apis/external.metrics.k8s.io/v1beta1/namespaces/default/unprocessedeventthreshold`
+            url: `${cluster.server}/apis/external.metrics.k8s.io/v1beta1/namespaces/${namespace}/${metricsname}`
         };
         kc.applyToRequest(opts);
         const metrics = await request.get(opts);

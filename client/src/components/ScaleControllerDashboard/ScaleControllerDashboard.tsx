@@ -12,9 +12,11 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
         super(props);
 
         this.state = {
-            loaded: false,
+            isLoaded: false,
+            isMounted: false,
             deployment: new V1Deployment(),
-            logs: []
+            logs: [],
+            scaleDecisionTime: ""
         };
     }
 
@@ -22,11 +24,12 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
         let logs = text.split("\n");
         let scaleControllerLogs: LogModel[] = [];
 
-        logs.forEach(function(log) {
+        for (let log of logs) {
             let searchLogRegex = new RegExp("time.*level.*msg");
             let splitLogRegex = new RegExp("(time|level|msg)=");
             let replicaCountRegex = new RegExp("(Scaled Object|Current Replicas|Source): ")
             let removeDoubleQuotes = new RegExp("['\"]+");
+            let scaleDecision = new RegExp("AbleToScale: .*");
             
             if (searchLogRegex.test(log) && !replicaCountRegex.test(log)) {
                 let logComponents = log.split(splitLogRegex);
@@ -37,13 +40,19 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 scaleControllerLog.infoLevel = logComponents[4].trim();
                 
                 scaleControllerLogs.push(scaleControllerLog);
+
+                if (scaleDecision.test(scaleControllerLog.msg)) {
+                    this.setState({ scaleDecisionTime: scaleControllerLog.timestamp})
+                }
             }
-        });
+        }
 
         return scaleControllerLogs;
     }
 
     async componentDidMount() {
+        this.setState({isMounted: true});
+
         await fetch('/api/keda')
             .then(res => { return res.json(); })
             .then(data => { 
@@ -51,24 +60,35 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
                 keda.metadata = data.metadata;
                 keda.spec = data.spec;
                 keda.status = data.status;
-                this.setState({ deployment: keda }); 
+                if (this.state.isMounted) {
+                    this.setState({ deployment: keda }); 
+                }
         });
         
         await fetch('/api/logs')
-            .then(res => res.text().then(text => 
-                { this.setState( {logs: this.formatLogs(text) }) }));
+            .then(res => res.text().then(text => { 
+                if (this.state.isMounted) {
+                    this.setState({ logs: this.formatLogs(text) }) 
+            }}));
 
-        this.setState( { loaded:true });
+        this.setState( { isLoaded:true });
 
         try {
             setInterval(async() => {
                 await fetch('/api/logs')
                 .then(res => res.text().then(text => 
-                    { this.setState( {logs: this.formatLogs(text) }) }));
+                    { 
+                    if (this.state.isMounted) {
+                        this.setState({ logs: this.formatLogs(text) }) 
+                    }}));
             }, 5000);
         } catch(e) {
             console.log(e);
         }
+    }
+
+    componentWillUnmount() {
+        this.setState({isMounted: false });
     }
 
     getScaleControllerDashboardContent() {
@@ -76,7 +96,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
             <div>
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ScaleControllerDetailPanel deployment={this.state.deployment}/>
+                        <ScaleControllerDetailPanel deployment={this.state.deployment} scaleDecisionTime={this.state.scaleDecisionTime}/>
                     </Grid>
                 </Grid>
                 <Grid container spacing={5}>
@@ -89,7 +109,7 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
     }
 
     render() {
-        if (this.state.loaded) {
+        if (this.state.isLoaded) {
             let breadcrumbLinks = [
                 {text: 'Overview', link: '/'}
             ];
@@ -110,7 +130,9 @@ interface ScaleControllerDashboardProps {
 }
 
 interface ScaleControllerDashboardState {
-    loaded: boolean;
+    isLoaded: boolean;
+    isMounted: boolean;
     deployment: V1Deployment;
     logs: LogModel[];
+    scaleDecisionTime: string;
 }

@@ -1,10 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
-import { Container, Drawer, CssBaseline, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemText, Breadcrumbs } from '@material-ui/core';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import { Container, Drawer, CssBaseline, AppBar, Toolbar, List, Typography, ListItem, ListItemText, Breadcrumbs } from '@material-ui/core';
 import { NavigationLinkModel } from '../models/NavigationLinks';
 import {  Link } from 'react-router-dom'
 import { ScaledObjectModel } from '../models/ScaledObjectModel';
@@ -46,7 +43,9 @@ export default class SideBarNav extends React.Component<{content: any, breadcrum
 
   render() {
     return (
-      <SideNav content={this.props.content} navLinks={this.getNavLinks()} breadcrumbs={this.props.breadcrumbs}></SideNav>
+      <div>
+        <SideNav content={this.props.content} navLinks={this.getNavLinks()} breadcrumbs={this.props.breadcrumbs}></SideNav>
+      </div>
     );
   }
 }
@@ -58,12 +57,12 @@ const DrawerListItem: React.FunctionComponent<{navLink: NavigationLinkModel, id:
     return (
       <div>
         <ListItem button component={Link} to={props.navLink.link} key={props.id}> 
-          <ListItemText primary={props.navLink.text} />
+          <ListItemText disableTypography primary={props.navLink.text} className={classes.drawerText}/>
         </ListItem>
         { props.navLink.sublinks.map( 
           (link: NavigationLinkModel, index:number) =>
           <ListItem button component={Link} to={link.link} className={classes.nested} key={`${props.id}${index}`}> 
-            <ListItemText primary={link.text} />
+            <ListItemText disableTypography primary={link.text} />
           </ListItem>
         )}
       </div>
@@ -71,23 +70,14 @@ const DrawerListItem: React.FunctionComponent<{navLink: NavigationLinkModel, id:
 
   return (
     <ListItem button component={Link} to={props.navLink.link} key={props.id}> 
-      <ListItemText primary={props.navLink.text} />
+      <ListItemText disableTypography primary={props.navLink.text} className={classes.drawerText}/>
     </ListItem>
   );
 };
 
 const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkModel[], breadcrumbs:NavigationLinkModel[]}> = (props) => {
     const classes = useStyles();
-    const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
-
-    function handleDrawerOpen() {
-      setOpen(true);
-    }
-
-    function handleDrawerClose() {
-      setOpen(false);
-    }
+    const logo = require('../imgs/keda-logo-transparent.png');
 
     function getBreadCrumbs() {
       let breadcrumbLinks = [];
@@ -117,60 +107,49 @@ const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkM
     return (
         <div className={classes.root}>
           <CssBaseline />
-          <AppBar
-              position="fixed"
-              className={clsx(classes.appBar, {
-              [classes.appBarShift]: open,
-              })}
-          >
-              <Toolbar>
-              <IconButton
-                  color="inherit"
-                  aria-label="Open drawer"
-                  onClick={handleDrawerOpen}
-                  edge="start"
-                  className={clsx(classes.menuButton, open && classes.hide)}
-              >
-                  <MenuIcon />
-              </IconButton>
+          <div style={{flexGrow: 1}}>
+              {/* Breadcrumbs App bar (mainly navigation)  */}
+            <AppBar
+                position="fixed"
+                className={clsx(classes.logoAppBar)}
+            >
+              <img alt='logo' style={{ width: 100 }} src={String(logo)} />
+            </AppBar>
 
-              {getBreadCrumbs()}
+            <AppBar
+                position="fixed"
+                className={clsx(classes.breadCrumbAppBar)}
+                
+            >
+              <div className={classes.toolbar}/>
+              <Toolbar> {getBreadCrumbs()} </Toolbar>
+            </AppBar>
 
-              </Toolbar>
-          </AppBar>
-
-          <Drawer
-              className={classes.drawer}
-              variant="persistent"
-              anchor="left"
-              open={open}
-              classes={{
-              paper: classes.drawerPaper,
-              }}
-          >
-              <div className={classes.drawerHeader}>
-              <IconButton onClick={handleDrawerClose}>
-                  {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-              </IconButton>
-              </div>
-              <Divider />
-
+            <Drawer
+                className={classes.drawer}
+                variant="permanent"
+                anchor="left"
+                classes={{
+                  paper: classes.drawerPaper,
+                }}
+            >
+              <div className={classes.toolbar}/>
               <List>
                 { props.navLinks.map((link: NavigationLinkModel, index:number) => <DrawerListItem key={index} id={index} navLink={link}></DrawerListItem>) }
               </List>
-          </Drawer>
+            </Drawer>
 
-          <main
-              className={clsx(classes.content, {
-              [classes.contentShift]: open,
-              })}
-          >
-              <div className={classes.drawerHeader} />
-              <Container maxWidth="lg">
-                  { props.content }
-              </Container>
-          </main>;
+            <main
+                className={clsx(classes.content)}
+            >
+                <div className={classes.drawerHeader} />
+                <Container maxWidth="lg">
+                    { props.content }
+                </Container>
+            </main>
+          </div>
         </div>
+
     );
 };
 
@@ -181,26 +160,22 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       display: 'flex',
     },
-    appBar: {
-      transition: theme.transitions.create(['margin', 'width'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
+    breadCrumbAppBar: {
+      zIndex: theme.zIndex.drawer + 1,
       background: '#2b78e4',
+      paddingLeft: theme.spacing(0.5),
+      paddingTop: theme.spacing(1)
     },
-    appBarShift: {
-      width: `calc(100% - ${drawerWidth}px)`,
-      marginLeft: drawerWidth,
-      transition: theme.transitions.create(['margin', 'width'], {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
+    logoAppBar: {
+      color: '#2b78e4',
+      background: 'white',
+      zIndex: theme.zIndex.drawer + 2,
+      zDepthShadows: 'none',
+      padding: theme.spacing(2),
+      paddingLeft: theme.spacing(2)
     },
     menuButton: {
       marginRight: theme.spacing(2),
-    },
-    hide: {
-      display: 'none',
     },
     drawer: {
       width: drawerWidth,
@@ -208,29 +183,27 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     drawerPaper: {
       width: drawerWidth,
+      paddingTop: theme.spacing(9),
+      paddingLeft: theme.spacing(1.5),
+      border: '0px',
+      background: '#fafafa'
+    },
+    drawerText: {
+      fontWeight: 'bold'
     },
     drawerHeader: {
       display: 'flex',
       alignItems: 'center',
-      padding: '0 8px',
+      paddingLeft: '16px',
+      paddingTop: '30px',
       ...theme.mixins.toolbar,
       justifyContent: 'flex-end',
     },
     content: {
       flexGrow: 1,
-      padding: theme.spacing(3),
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      marginLeft: -drawerWidth,
-    },
-    contentShift: {
-      transition: theme.transitions.create('margin', {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: 0,
+      padding: theme.spacing(2),
+      marginLeft: drawerWidth,
+      marginTop: '68px'
     },
     nested: {
       paddingLeft: theme.spacing(4),
@@ -238,6 +211,7 @@ const useStyles = makeStyles((theme: Theme) =>
     noLinkStyle: {
       textDecoration: 'none',
       color: 'white',
-    }
+    },
+    toolbar: theme.mixins.toolbar
   }),
 );

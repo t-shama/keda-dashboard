@@ -4,7 +4,7 @@ import { Style } from 'jss';
 import ScaleControllerDashboard from './components/ScaleControllerDashboard/ScaleControllerDashboard';
 import ScaledObjectsDashboard from './components/ScaledObjectsDashboard/ScaledObjectsDashboard';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import ScaledObjectDetailsDashboard from './components/ScaledObjectDashboard/ScaledObjectDashboard';
+import ScaledObjectDetailsDashboard from './components/ScaledObjectDashboard/ScaledObjectDetailsDashboard';
 
 class App extends Component<{}, {}> {
     constructor(props: {}) {
@@ -17,9 +17,6 @@ class App extends Component<{}, {}> {
             marginTop: '100px',
             color: 'black'
         },
-        appBar: {
-            background: '#2b78e4'
-        }
     };
 
 

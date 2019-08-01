@@ -1,14 +1,15 @@
 import React from 'react';
 import { ScaledObjectModel } from '../../models/ScaledObjectModel';
 import { Grid, Paper, Typography, Table, TableCell, TableBody, TableRow, TableHead, Box } from '@material-ui/core';
-import { V1HorizontalPodAutoscaler } from '@kubernetes/client-node';
+import { V1HorizontalPodAutoscaler, V1Deployment } from '@kubernetes/client-node';
 
-class ScaledObjectRow extends React.Component<{ scaledObject: ScaledObjectModel }, { hpa: V1HorizontalPodAutoscaler }> {
+class ScaledObjectRow extends React.Component<{ scaledObject: ScaledObjectModel }, { hpa: V1HorizontalPodAutoscaler, deployment: V1Deployment }> {
     constructor(props: { scaledObject: ScaledObjectModel }) {
         super(props);
 
         this.state = {
-            hpa: new V1HorizontalPodAutoscaler()
+            hpa: new V1HorizontalPodAutoscaler(),
+            deployment: new V1Deployment()
         };
     }
 
@@ -16,6 +17,10 @@ class ScaledObjectRow extends React.Component<{ scaledObject: ScaledObjectModel 
         await fetch(`/api/namespace/${this.props.scaledObject.metadata.namespace}/hpa/keda-hpa-${this.props.scaledObject.metadata.name}`)
         .then(res => res.json())
         .then((json) => this.setState({ hpa: json }));
+
+        await fetch(`/api/namespace/${this.props.scaledObject.metadata.namespace}/deployment/${this.props.scaledObject.metadata.name}`)
+        .then(res => res.json())
+        .then((json) => this.setState({ deployment: json }));
     }
 
     render() {
@@ -26,7 +31,8 @@ class ScaledObjectRow extends React.Component<{ scaledObject: ScaledObjectModel 
                 <TableCell align="left">{ this.props.scaledObject.metadata.name }</TableCell>
                 <TableCell align="left">{ (this.state.hpa.status !== undefined) ? 
                                             `(${this.state.hpa.status.currentReplicas}/${this.state.hpa.status.desiredReplicas})`: "not found" }</TableCell>
-                <TableCell align="left">{ this.props.scaledObject.status.lastActiveTime }</TableCell>
+                <TableCell align="left">{ (this.state.deployment.status && this.state.deployment.status.conditions && this.state.deployment.status!.conditions.length > 0) ?
+                     this.state.deployment.status!.conditions[this.state.deployment.status!.conditions.length - 1].lastUpdateTime:"not available" }</TableCell>
                 <TableCell align="left">{ this.props.scaledObject.spec.triggers[0].type}</TableCell>
                 <TableCell align="left">{ "keda-hpa-" + this.props.scaledObject.metadata.name}</TableCell>
                 <TableCell align="left">{ (this.state.hpa.spec !== undefined) ? 

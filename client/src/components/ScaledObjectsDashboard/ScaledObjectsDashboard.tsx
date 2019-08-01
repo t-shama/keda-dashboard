@@ -23,6 +23,10 @@ export default class ScaledObjectsDashboard extends React.Component<{}, {loaded:
         this.setState( { loaded:true });
     }
 
+    componentWillUnmount() {
+        
+    }
+
     render() {
         if (this.state.loaded) {
             let table = <ScaledObjectsTable scaledObjects={this.state.scaledObjects}/>

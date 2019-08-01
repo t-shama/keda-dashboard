@@ -13,7 +13,7 @@ import ScaleTargetPanel from './ScaleTargetPanel';
 import ScaledObjectLogPanel from './ScaledObjectLogPanel';
 
 export default class ScaledObjectDetailsDashboard extends React.Component<ScaledObjectDetailsDashboardProps, { loaded: boolean, name:string, 
-    namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler, logs: LogModel[] }> {
+    namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler, logs: LogModel[], lastActiveTime: string }> {
 
     constructor(props: ScaledObjectDetailsDashboardProps) {
         super(props);
@@ -25,32 +25,77 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             scaledObject: new ScaledObjectModel(),
             deployment: new V1Deployment(),
             hpa: new V1HorizontalPodAutoscaler(),
-            logs: []
+            logs: [],
+            lastActiveTime: "",
         };
     }
 
-    formatLogs(text: string, name: string, namespace: string) {
+    private roundUpTimestamp(timestamp: string) {
+        let roundedTimestamp = timestamp.slice(0, -4);
+
+        if (Number(timestamp.slice(-3, -2)) >= 3) {
+            if (Number(roundedTimestamp.slice(-1)) == 9) {
+                roundedTimestamp = `${roundedTimestamp.slice(0, -2)}${Number(roundedTimestamp.slice(-2, -1)) + 1}0`;
+            } else {
+                roundedTimestamp = `${roundedTimestamp.slice(0, -1)}${Number(roundedTimestamp.slice(-1)) + 1}`;
+            }
+        }
+
+        return roundedTimestamp;
+    }
+
+    private formatLogs(text: string, name: string, namespace: string) {
         let logs = text.split("\n");
         let scaledObjectLogs: LogModel[] = [];
+        let lastActiveTime: string = "";
+        let scaleDecisions:{[key:string]: LogModel} = {};
 
-        logs.forEach(function(log) {
+        for (let i = 0; i < logs.length; i++) {
+            let log = logs[i];
+
             let searchLogRegex = new RegExp("time.*level.*msg");
             let splitLogRegex = new RegExp("(time|level|msg)=");
             let scaledObjectLogRegex = new RegExp(`${namespace}/${name}|keda-hpa-${name}`);
-            let replicaMetricsRegex = new RegExp("(Scaled Object|Current Replicas|Source): ");
+            let replicaMetricsRegex = new RegExp("(Metric Type: Replica Count;) ((Scaled Object|Current Replicas): .*;)");
+            let externalMetricsRegex = new RegExp("(Metric Type: Input Metric;) ((Scaled Object|Metric Name|Metric Value):.*);");
             let removeDoubleQuotes = new RegExp("['\"]+");
+            let scaleDecisionRegex = new RegExp("AbleToScale: .*")
             
-            if (searchLogRegex.test(log) && scaledObjectLogRegex.test(log) && !replicaMetricsRegex.test(log)) {
+            // putting together log that will show up in log panel
+            if (searchLogRegex.test(log) && scaledObjectLogRegex.test(log) && !replicaMetricsRegex.test(log) && !externalMetricsRegex.test(log)) {
                 let logComponents = log.split(splitLogRegex);
                 let scaledObjectLog = new LogModel();
                 scaledObjectLog.msg = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaledObjectLog.source = logComponents[4].trim();
                 scaledObjectLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaledObjectLog.infoLevel = logComponents[4].trim();
+                
+                // update last scale time and get the input metric associated with that scale decision
+                if (scaleDecisionRegex.test(scaledObjectLog.msg)) {
+                   lastActiveTime = scaledObjectLog.timestamp;
+                   this.setState({ lastActiveTime: lastActiveTime });
+                
+                   let roundedTimestamp = this.roundUpTimestamp(scaledObjectLog.timestamp);
+                   scaleDecisions[roundedTimestamp] = scaledObjectLog;
+
+                } 
 
                 scaledObjectLogs.push(scaledObjectLog);
+            } 
+            // getting external metrics from logs and store in dictionary
+            else if (searchLogRegex.test(log) && scaledObjectLogRegex.test(log) && externalMetricsRegex.test(log)) {
+                let logComponents = log.split(splitLogRegex);
+                let msg = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
+
+                let metricValue = Number(msg.split("; ")[3].split(": ")[1]);
+                let timestamp = this.roundUpTimestamp(logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim());
+
+                if (scaleDecisions[timestamp] && scaleDecisions[timestamp].inputMetric < metricValue) {
+                    scaleDecisions[timestamp].inputMetric = metricValue;
+                }
+
             }
-        });
+        }
 
         return scaledObjectLogs;
     }
@@ -75,8 +120,9 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             .then((json) => this.setState({ hpa: json }));
         
         await fetch('/api/logs')
-            .then(res => res.text().then(text => 
-                { this.setState( {logs: this.formatLogs(text, this.state.name, this.state.namespace) }) }));
+            .then(res => res.text().then(text => { 
+                this.setState( {logs:  this.formatLogs(text, this.state.name, this.state.namespace)} );
+            }));
 
         this.setState({ loaded: true });
 
@@ -91,12 +137,16 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
         }
     }
 
+    componentWillUnmount() {
+        
+    }
+
     getDetailDashboard() {
         return (
             <div>
                 <Grid container spacing={5}>
                     <Grid item xs={12} md={12} lg={12}>
-                        <ScaledObjectDetailPanel deployment={this.state.deployment} scaledObject={this.state.scaledObject}></ScaledObjectDetailPanel>                    
+                        <ScaledObjectDetailPanel deployment={this.state.deployment} scaledObject={this.state.scaledObject} lastActiveTime={this.state.lastActiveTime}></ScaledObjectDetailPanel>                    
                     </Grid>
                 </Grid>
                 

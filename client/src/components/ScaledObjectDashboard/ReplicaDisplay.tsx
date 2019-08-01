@@ -4,7 +4,8 @@ import { ResponsiveBar } from '@nivo/bar';
 
 export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
     dataset: {[key: string]: any}[], logs: string}> {
-    private numBarsInGraph:number = 24;
+    private numBarsInGraph:number = 40;
+    private timeStampFrequency:number = 10;
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);
@@ -20,8 +21,10 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
         let logs = text.split("\n");
         let dataset: {[key: string]: number}[] = [];
 
-        // (logs.length-1)%60
-        for (let i = 0; i < logs.length; i+=120) {
+        let totalReplicas = 0;
+
+        // (logs.length-1)%10
+        for (let i = 0; i < logs.length; i+=1) {            
             let splitLogRegex = new RegExp("(time|level|msg)=");
             let scaledObjectLogRegex = new RegExp(`${namespace}/${name}|keda-hpa-${name}`);
             let removeDoubleQuotes = new RegExp("['\"]+");
@@ -29,18 +32,31 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
             if (scaledObjectLogRegex.test(logs[i])) {
                 let metricsInLog: {[key: string]: any} = {};
                 let logComponents = logs[i].split(splitLogRegex);
-                let metricInfo =  logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
+                let metricInfo = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
                 let timestamp = logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
 
-                metricsInLog['timestamp'] = timestamp;
-                metricsInLog[name] = Number(metricInfo[2].split(": ")[1].trim());
+                totalReplicas += Number(metricInfo[2].split(": ")[1].trim());
 
-                if (dataset.length >= this.numBarsInGraph) {
-                    while (dataset.length >= this.numBarsInGraph) {
+                if (dataset.length > this.numBarsInGraph) {
+                    while (dataset.length > this.numBarsInGraph) {
                         dataset.shift();
                     }
                 }
-                dataset.push(metricsInLog);
+                
+                // metricsInLog['timestamp'] = timestamp;
+                // metricsInLog[name] = totalReplicas;
+                // dataset.push(metricsInLog);
+
+                if (i%this.timeStampFrequency===0) {
+                    metricsInLog['timestamp'] = timestamp;
+                    let avgReplicas = totalReplicas/this.timeStampFrequency;
+                    avgReplicas = Number(avgReplicas.toFixed(2));
+                    metricsInLog[name] = avgReplicas;
+    
+                    dataset.push(metricsInLog);
+
+                    totalReplicas = 0;
+                } 
             }
         }
 
@@ -67,6 +83,9 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
         }
     }
 
+    componentWillUnmount() {
+    }
+
     async getCurrentReplicaCount() {
         await fetch(`/api/namespace/${this.props.namespace}/deployment/${this.props.scaledObjectName}`)
         .then(res => res.json())
@@ -87,18 +106,18 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                             data={this.state.dataset}
                             keys={[this.props.scaledObjectName]}
                             indexBy="timestamp"
-                            margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+                            margin={{ top: 50, right: 130, bottom: 130, left: 60 }}
                             padding={0.3}
-                            colors={{ scheme: 'nivo' }}
+                            colors={{ scheme: 'paired' }}
                             axisTop={null}
                             axisRight={null}
                             axisBottom={{
                                 tickSize: 5,
                                 tickPadding: 5,
-                                tickRotation: 0,
+                                tickRotation: 32,
                                 legend: 'timestamp',
                                 legendPosition: 'middle',
-                                legendOffset: 32
+                                legendOffset: 92.
                             }}
                             axisLeft={{
                                 tickSize: 5,
@@ -111,31 +130,8 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                             labelSkipWidth={12}
                             labelSkipHeight={12}
                             labelTextColor={{ from: 'color', modifiers: [ [ 'darker', 1.6 ] ] }}
-                            legends={[
-                                {
-                                    dataFrom: 'keys',
-                                    anchor: 'bottom-right',
-                                    direction: 'column',
-                                    justify: false,
-                                    translateX: 120,
-                                    translateY: 0,
-                                    itemsSpacing: 2,
-                                    itemWidth: 100,
-                                    itemHeight: 20,
-                                    itemDirection: 'left-to-right',
-                                    itemOpacity: 0.85,
-                                    symbolSize: 20,
-                                    effects: [
-                                        {
-                                            on: 'hover',
-                                            style: {
-                                                itemOpacity: 1
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]}
-                            animate={false}
+                            enableGridY={false}
+                            animate={true}
                             motionStiffness={90}
                             motionDamping={15}
                         />

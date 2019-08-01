@@ -2,17 +2,27 @@ import React from 'react';
 import { Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell, Box } from '@material-ui/core';
 import { ScaledObjectModel, ScaledObjectTriggers } from '../../models/ScaledObjectModel';
 
+function getTriggerName(trigger: ScaledObjectTriggers) {
+    let triggerNameRegex = new RegExp("([a-zA-Z\d]*)Name");
+
+    for (let metadataName of Object.keys(trigger.metadata)) {
+        if (triggerNameRegex.test(metadataName)) {
+            return trigger.metadata[metadataName];
+        }
+    }
+
+    return "not found"
+}
 
 const TriggerTableRow: React.FunctionComponent<{trigger: ScaledObjectTriggers}> = (props) => {
     return (
         <TableRow>
-            <TableCell align="left">{(props.trigger.name || props.trigger.name !== "") ? props.trigger.name:"not found"}</TableCell>
+            <TableCell align="left">{getTriggerName(props.trigger)}</TableCell>
             <TableCell align="left">{props.trigger.type}</TableCell>
             <TableCell align="left">
-            {
-                Object.keys(props.trigger.metadata).map((key, index) => 
+            { Object.keys(props.trigger.metadata).map((key, index) => 
                     <p key={index}>{key + ": " + props.trigger.metadata[key] }</p>
-                )}
+            )}
             </TableCell>
         </TableRow>
     );

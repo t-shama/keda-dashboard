@@ -5,6 +5,7 @@ import { Container, Drawer, CssBaseline, AppBar, Toolbar, List, Typography, List
 import { NavigationLinkModel } from '../models/NavigationLinks';
 import {  Link } from 'react-router-dom'
 import { ScaledObjectModel } from '../models/ScaledObjectModel';
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
 export default class SideBarNav extends React.Component<{content: any, breadcrumbs:NavigationLinkModel[]}, {scaledObjects: ScaledObjectModel[]}> {
   constructor(props: {content: any, breadcrumbs:NavigationLinkModel[]}) {
@@ -97,7 +98,7 @@ const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkM
       }
 
       return (
-        <Breadcrumbs aria-label="Breadcrumb">
+        <Breadcrumbs aria-label="Breadcrumb" separator={<NavigateNextIcon fontSize="small" />}>
          { breadcrumbLinks }
         </Breadcrumbs>
       )

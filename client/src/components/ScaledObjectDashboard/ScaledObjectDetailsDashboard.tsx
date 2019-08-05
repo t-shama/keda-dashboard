@@ -33,8 +33,8 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
     private roundUpTimestamp(timestamp: string) {
         let roundedTimestamp = timestamp.slice(0, -4);
 
-        if (Number(timestamp.slice(-3, -2)) >= 3) {
-            if (Number(roundedTimestamp.slice(-1)) == 9) {
+        if (Number(timestamp.slice(-3, -2)) >= 0) {
+            if (Number(roundedTimestamp.slice(-1)) === 9) {
                 roundedTimestamp = `${roundedTimestamp.slice(0, -2)}${Number(roundedTimestamp.slice(-2, -1)) + 1}0`;
             } else {
                 roundedTimestamp = `${roundedTimestamp.slice(0, -1)}${Number(roundedTimestamp.slice(-1)) + 1}`;
@@ -70,7 +70,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
                 scaledObjectLog.timestamp =  logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
                 scaledObjectLog.infoLevel = logComponents[4].trim();
                 
-                // update last scale time and get the input metric associated with that scale decision
+                // update last scale time and store the scale decision in a dictionary (to be updated later)
                 if (scaleDecisionRegex.test(scaledObjectLog.msg)) {
                    lastActiveTime = scaledObjectLog.timestamp;
                    this.setState({ lastActiveTime: lastActiveTime });
@@ -82,7 +82,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
 
                 scaledObjectLogs.push(scaledObjectLog);
             } 
-            // getting external metrics from logs and store in dictionary
+            // getting external metrics from logs - find the scale decision in the dictionary and modify the log to include the timestamp
             else if (searchLogRegex.test(log) && scaledObjectLogRegex.test(log) && externalMetricsRegex.test(log)) {
                 let logComponents = log.split(splitLogRegex);
                 let msg = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
@@ -90,8 +90,9 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
                 let metricValue = Number(msg.split("; ")[3].split(": ")[1]);
                 let timestamp = this.roundUpTimestamp(logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim());
 
-                if (scaleDecisions[timestamp] && scaleDecisions[timestamp].inputMetric < metricValue) {
+                if (scaleDecisions[timestamp] && scaleDecisions[timestamp].inputMetric <= metricValue) {
                     scaleDecisions[timestamp].inputMetric = metricValue;
+                    console.log(metricValue, scaleDecisions[timestamp]);
                 }
 
             }

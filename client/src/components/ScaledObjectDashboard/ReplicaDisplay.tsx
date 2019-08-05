@@ -4,7 +4,7 @@ import { ResponsiveBar } from '@nivo/bar';
 
 export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
     dataset: {[key: string]: any}[], logs: string}> {
-    private numBarsInGraph:number = 40;
+    private numBarsInGraph:number = 100;
     private timeStampFrequency:number = 10;
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
@@ -35,7 +35,7 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                 let metricInfo = logComponents[6].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim().split("; ");
                 let timestamp = logComponents[2].replace(removeDoubleQuotes, "").replace(removeDoubleQuotes, "").trim();
 
-                totalReplicas += Number(metricInfo[2].split(": ")[1].trim());
+                totalReplicas = Number(metricInfo[2].split(": ")[1].trim());
 
                 if (dataset.length > this.numBarsInGraph) {
                     while (dataset.length > this.numBarsInGraph) {
@@ -43,20 +43,10 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                     }
                 }
                 
-                // metricsInLog['timestamp'] = timestamp;
-                // metricsInLog[name] = totalReplicas;
-                // dataset.push(metricsInLog);
+                metricsInLog['timestamp'] = timestamp;
+                metricsInLog[name] = totalReplicas;
+                dataset.push(metricsInLog);
 
-                if (i%this.timeStampFrequency===0) {
-                    metricsInLog['timestamp'] = timestamp;
-                    let avgReplicas = totalReplicas/this.timeStampFrequency;
-                    avgReplicas = Number(avgReplicas.toFixed(2));
-                    metricsInLog[name] = avgReplicas;
-    
-                    dataset.push(metricsInLog);
-
-                    totalReplicas = 0;
-                } 
             }
         }
 
@@ -106,7 +96,7 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                             data={this.state.dataset}
                             keys={[this.props.scaledObjectName]}
                             indexBy="timestamp"
-                            margin={{ top: 50, right: 130, bottom: 130, left: 60 }}
+                            margin={{ top: 20, right: 0, bottom: 120, left: 20 }}
                             padding={0.3}
                             colors={{ scheme: 'paired' }}
                             axisTop={null}
@@ -115,14 +105,16 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                                 tickSize: 5,
                                 tickPadding: 5,
                                 tickRotation: 32,
+                                tickValues: 1,
                                 legend: 'timestamp',
                                 legendPosition: 'middle',
                                 legendOffset: 92.
                             }}
                             axisLeft={{
                                 tickSize: 5,
-                                tickPadding: 5,
+                                tickPadding: 0,
                                 tickRotation: 0,
+                                tickValues: 10,
                                 legend: 'replicas',
                                 legendPosition: 'middle',
                                 legendOffset: -40
@@ -130,7 +122,7 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                             labelSkipWidth={12}
                             labelSkipHeight={12}
                             labelTextColor={{ from: 'color', modifiers: [ [ 'darker', 1.6 ] ] }}
-                            enableGridY={false}
+                            enableGridY={true}
                             animate={true}
                             motionStiffness={90}
                             motionDamping={15}

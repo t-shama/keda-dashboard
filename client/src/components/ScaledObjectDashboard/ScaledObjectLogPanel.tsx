@@ -19,7 +19,7 @@ const ScaledObjectLogRow: React.FunctionComponent<{ log: LogModel }> = (props) =
         <TableRow key={props.log.timestamp}>
             <TableCell align="left"> { icon }</TableCell>
             <TableCell align="left"> {`${props.log.inputMetric}`} </TableCell>
-            <TableCell align="left">{props.log.source}</TableCell>
+            {/* <TableCell align="left">{props.log.source}</TableCell> */}
             <TableCell align="left">{props.log.timestamp}</TableCell>
             <TableCell align="left">{props.log.msg}</TableCell>
         </TableRow>
@@ -42,7 +42,7 @@ export default class ScaledObjectLogPanel extends React.Component<{logs: LogMode
                             <TableRow key={'header-row'}>
                                 <TableCell align="left">Status</TableCell>
                                 <TableCell align="left">Input Metric</TableCell>
-                                <TableCell align="left">Source</TableCell>
+                                {/* <TableCell align="left">Source</TableCell> */}
                                 <TableCell align="left">Time Stamp</TableCell>
                                 <TableCell align="left">Scaling Decision</TableCell>
                             </TableRow>

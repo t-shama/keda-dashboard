@@ -146,7 +146,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=500`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=300`
         };
         kc.applyToRequest(opts);
         let logs = await request.get(opts);
@@ -165,7 +165,7 @@ export function setupApis(app: Express) {
         }
 
         const opts: request.Options = {
-            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=500`
+            url: `${cluster.server}/api/v1/namespaces/keda/pods/keda-operator-75f55c75fd-wj547/log?tailLines=300`
         };
         kc.applyToRequest(opts);
         const logs = await request.get(opts);

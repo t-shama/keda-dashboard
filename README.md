@@ -1,5 +1,5 @@
 
-## Prerequisits
+## Prerequisites
 
 - [node 10.x](https://nodejs.org/en/)
 - [yarn](https://yarnpkg.com/en/docs/install)
@@ -30,3 +30,11 @@ kubectl port-forward {pod-name} 8080:8080 --namespace keda
 ```
 
 then go to `http://localhost:8080` in the browser.
+
+## Overview
+
+Click [here](https://github.com/t-shama/keda-dashboard/blob/master/OVERVIEW.md) for an overview of the KEDA codebase.
+
+## Contributing
+
+Click [here](https://github.com/t-shama/keda-dashboard/blob/master/CONTRIBUTING.md) to learn how to contribute to the KEDA dashboard.

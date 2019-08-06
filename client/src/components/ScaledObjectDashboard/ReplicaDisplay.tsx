@@ -5,7 +5,6 @@ import { ResponsiveBar } from '@nivo/bar';
 export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
     dataset: {[key: string]: any}[], logs: string}> {
     private numBarsInGraph:number = 100;
-    private timeStampFrequency:number = 10;
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);

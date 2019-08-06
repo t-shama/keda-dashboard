@@ -7,49 +7,71 @@ import {  Link } from 'react-router-dom'
 import { ScaledObjectModel } from '../models/ScaledObjectModel';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
-export default class SideBarNav extends React.Component<{content: any, breadcrumbs:NavigationLinkModel[]}, {scaledObjects: ScaledObjectModel[]}> {
-  constructor(props: {content: any, breadcrumbs:NavigationLinkModel[]}) {
-    super(props);
 
-    this.state = {
-      scaledObjects: []
-    }
-  }
 
-  componentDidMount() {
-    fetch('/api/scaledobjects')
-        .then(res => res.json())
-        .then(({ items }) => this.setState({ scaledObjects: items }));
-  }
+const drawerWidth = 240;
 
-  getScaledObjectSublinks() {
-    let sublinks: NavigationLinkModel[] = [];
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: 'flex',
+    },
+    breadCrumbAppBar: {
+      zIndex: theme.zIndex.drawer + 1,
+      background: '#2b78e4',
+      paddingLeft: theme.spacing(0.5),
+      paddingTop: theme.spacing(1)
+    },
+    logoAppBar: {
+      color: '#2b78e4',
+      background: 'white',
+      zIndex: theme.zIndex.drawer + 2,
+      zDepthShadows: 'none',
+      padding: theme.spacing(2),
+      paddingLeft: theme.spacing(2)
+    },
+    menuButton: {
+      marginRight: theme.spacing(2),
+    },
+    drawer: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
+    drawerPaper: {
+      width: drawerWidth,
+      paddingTop: theme.spacing(9),
+      paddingLeft: theme.spacing(1.5),
+      border: '0px',
+      background: '#fafafa'
+    },
+    drawerText: {
+      fontWeight: 'bold'
+    },
+    drawerHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      paddingLeft: '16px',
+      paddingTop: '30px',
+      ...theme.mixins.toolbar,
+      justifyContent: 'flex-end',
+    },
+    content: {
+      flexGrow: 1,
+      padding: theme.spacing(2),
+      marginLeft: drawerWidth,
+      marginTop: '68px'
+    },
+    nested: {
+      paddingLeft: theme.spacing(4),
+    },
+    noLinkStyle: {
+      textDecoration: 'none',
+      color: 'white',
+    },
+    toolbar: theme.mixins.toolbar
+  }),
+);
 
-    for (let i = 0; i < this.state.scaledObjects.length; i++) {
-      if (this.state.scaledObjects[i].metadata) {
-        let sublink = '/scaled-objects/namespace/' + this.state.scaledObjects[i].metadata.namespace + '/scaled-object/' + this.state.scaledObjects[i].metadata.name;
-        sublinks.push(new NavigationLinkModel(this.state.scaledObjects[i].metadata.namespace + '/' + this.state.scaledObjects[i].metadata.name, sublink));
-      }
-    }
-
-    return sublinks;
-  }
-
-  getNavLinks() {
-    return [
-      new NavigationLinkModel("Overview", "/"), 
-      new NavigationLinkModel("Scaled Objects", "/scaled-objects", this.getScaledObjectSublinks())
-    ];
-  }
-
-  render() {
-    return (
-      <div>
-        <SideNav content={this.props.content} navLinks={this.getNavLinks()} breadcrumbs={this.props.breadcrumbs}></SideNav>
-      </div>
-    );
-  }
-}
 
 const DrawerListItem: React.FunctionComponent<{navLink: NavigationLinkModel, id: number}> = (props) => {
   const classes = useStyles();
@@ -154,65 +176,46 @@ const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkM
     );
 };
 
-const drawerWidth = 240;
+export default class SideBarNav extends React.Component<{content: any, breadcrumbs:NavigationLinkModel[]}, {scaledObjects: ScaledObjectModel[]}> {
+  constructor(props: {content: any, breadcrumbs:NavigationLinkModel[]}) {
+    super(props);
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      display: 'flex',
-    },
-    breadCrumbAppBar: {
-      zIndex: theme.zIndex.drawer + 1,
-      background: '#2b78e4',
-      paddingLeft: theme.spacing(0.5),
-      paddingTop: theme.spacing(1)
-    },
-    logoAppBar: {
-      color: '#2b78e4',
-      background: 'white',
-      zIndex: theme.zIndex.drawer + 2,
-      zDepthShadows: 'none',
-      padding: theme.spacing(2),
-      paddingLeft: theme.spacing(2)
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-    drawerPaper: {
-      width: drawerWidth,
-      paddingTop: theme.spacing(9),
-      paddingLeft: theme.spacing(1.5),
-      border: '0px',
-      background: '#fafafa'
-    },
-    drawerText: {
-      fontWeight: 'bold'
-    },
-    drawerHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      paddingLeft: '16px',
-      paddingTop: '30px',
-      ...theme.mixins.toolbar,
-      justifyContent: 'flex-end',
-    },
-    content: {
-      flexGrow: 1,
-      padding: theme.spacing(2),
-      marginLeft: drawerWidth,
-      marginTop: '68px'
-    },
-    nested: {
-      paddingLeft: theme.spacing(4),
-    },
-    noLinkStyle: {
-      textDecoration: 'none',
-      color: 'white',
-    },
-    toolbar: theme.mixins.toolbar
-  }),
-);
+    this.state = {
+      scaledObjects: []
+    }
+  }
+
+  componentDidMount() {
+    fetch('/api/scaledobjects')
+        .then(res => res.json())
+        .then(({ items }) => this.setState({ scaledObjects: items }));
+  }
+
+  getScaledObjectSublinks() {
+    let sublinks: NavigationLinkModel[] = [];
+
+    for (let i = 0; i < this.state.scaledObjects.length; i++) {
+      if (this.state.scaledObjects[i].metadata) {
+        let sublink = '/scaled-objects/namespace/' + this.state.scaledObjects[i].metadata.namespace + '/scaled-object/' + this.state.scaledObjects[i].metadata.name;
+        sublinks.push(new NavigationLinkModel(this.state.scaledObjects[i].metadata.namespace + '/' + this.state.scaledObjects[i].metadata.name, sublink));
+      }
+    }
+
+    return sublinks;
+  }
+
+  getNavLinks() {
+    return [
+      new NavigationLinkModel("Overview", "/"), 
+      new NavigationLinkModel("Scaled Objects", "/scaled-objects", this.getScaledObjectSublinks())
+    ];
+  }
+
+  render() {
+    return (
+      <div>
+        <SideNav content={this.props.content} navLinks={this.getNavLinks()} breadcrumbs={this.props.breadcrumbs}></SideNav>
+      </div>
+    );
+  }
+}

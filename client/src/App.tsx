@@ -5,6 +5,7 @@ import ScaleControllerDashboard from './components/ScaleControllerDashboard/Scal
 import ScaledObjectsDashboard from './components/ScaledObjectsDashboard/ScaledObjectsDashboard';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ScaledObjectDetailsDashboard from './components/ScaledObjectDashboard/ScaledObjectDetailsDashboard';
+import NotFound from './components/NotFound';
 
 class App extends Component<{}, {}> {
     constructor(props: {}) {
@@ -29,6 +30,7 @@ class App extends Component<{}, {}> {
                         <Route exact path="/" component={ScaleControllerDashboard} />
                         <Route exact path="/scaled-objects" component={ScaledObjectsDashboard} />
                         <Route path="/scaled-objects/namespace/:namespace/scaled-object/:name" component={ScaledObjectDetailsDashboard} />
+                        <Route path="*" component={NotFound} />
                     </Switch>
                 </Router>
             </React.Fragment>

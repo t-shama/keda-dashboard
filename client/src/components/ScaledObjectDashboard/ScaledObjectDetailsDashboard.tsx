@@ -12,6 +12,11 @@ import TriggerTable from './TriggerTable';
 import ScaleTargetPanel from './ScaleTargetPanel';
 import ScaledObjectLogPanel from './ScaledObjectLogPanel';
 
+
+interface ScaledObjectDetailsDashboardProps extends RouteComponentProps<{ namespace: string, name: string }> {
+
+}
+
 export default class ScaledObjectDetailsDashboard extends React.Component<ScaledObjectDetailsDashboardProps, { loaded: boolean, name:string, 
     namespace: string, scaledObject:ScaledObjectModel, deployment:V1Deployment, hpa: V1HorizontalPodAutoscaler, logs: LogModel[], lastActiveTime: string }> {
 
@@ -138,8 +143,7 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
         }
     }
 
-    componentWillUnmount() {
-        
+    componentWillUnmount() {      
     }
 
     getDetailDashboard() {
@@ -191,8 +195,4 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
             return <LoadingView></LoadingView>
         }
     }
-}
-
-interface ScaledObjectDetailsDashboardProps extends RouteComponentProps<{ namespace: string, name: string }> {
-
 }

@@ -123,7 +123,7 @@ const SideNav: React.FunctionComponent<{ content: any, navLinks: NavigationLinkM
                 
             >
               <div className={classes.toolbar}/>
-              <Toolbar> {getBreadCrumbs()} </Toolbar>
+              <Toolbar> { getBreadCrumbs() } </Toolbar>
             </AppBar>
 
             <Drawer

@@ -20,7 +20,7 @@ export default class ScaledObjectsDashboard extends React.Component<{}, {loaded:
         .then(res => res.json())
         .then(({ items }) => this.setState({ scaledObjects: items }));
 
-        this.setState( { loaded:true });
+        this.setState({ loaded:true });
     }
 
     componentWillUnmount() {

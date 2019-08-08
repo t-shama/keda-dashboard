@@ -2,15 +2,13 @@ import React from 'react';
 import { Typography, Paper, Box } from '@material-ui/core';
 import { ResponsiveBar } from '@nivo/bar';
 
-export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {currentReplicas: number, 
-    dataset: {[key: string]: any}[], logs: string}> {
+export default class ReplicaDisplay extends React.Component<{scaledObjectName: string, namespace:string}, {dataset: {[key: string]: any}[], logs: string}> {
     private numBarsInGraph:number = 100;
 
     constructor(props: {scaledObjectName: string, namespace:string}) {
         super(props);
 
         this.state = {
-            currentReplicas: 0,
             dataset: [],
             logs: ""
         }
@@ -74,15 +72,6 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
 
     componentWillUnmount() {
     }
-
-    async getCurrentReplicaCount() {
-        await fetch(`/api/namespace/${this.props.namespace}/deployment/${this.props.scaledObjectName}`)
-        .then(res => res.json())
-        .then((data) => { 
-            let currentReplicas = (data.spec!.replicas === undefined) ? 0:data.spec!.replicas;
-            this.setState({currentReplicas: currentReplicas });
-        });
-    }
     
     render() {
 
@@ -95,20 +84,23 @@ export default class ReplicaDisplay extends React.Component<{scaledObjectName: s
                             data={this.state.dataset}
                             keys={[this.props.scaledObjectName]}
                             indexBy="timestamp"
-                            margin={{ top: 20, right: 0, bottom: 120, left: 20 }}
+                            margin={{ top: 20, right: 0, bottom: 20, left: 20 }}
                             padding={0.3}
                             colors={{ scheme: 'paired' }}
                             axisTop={null}
                             axisRight={null}
-                            axisBottom={{
-                                tickSize: 5,
-                                tickPadding: 5,
-                                tickRotation: 32,
-                                tickValues: 1,
-                                legend: 'timestamp',
-                                legendPosition: 'middle',
-                                legendOffset: 92.
-                            }}
+                            axisBottom={
+                            //     {
+                            //     tickSize: 5,
+                            //     tickPadding: 5,
+                            //     tickRotation: 32,
+                            //     tickValues: 10,
+                            //     legend: 'timestamp',
+                            //     legendPosition: 'middle',
+                            //     legendOffset: 92
+                            // }
+                            null
+                            }
                             axisLeft={{
                                 tickSize: 5,
                                 tickPadding: 0,

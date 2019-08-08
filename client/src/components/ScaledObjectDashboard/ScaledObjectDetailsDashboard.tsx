@@ -49,6 +49,20 @@ export default class ScaledObjectDetailsDashboard extends React.Component<Scaled
         return roundedTimestamp;
     }
 
+    private async getLogs() {
+        let pod = await fetch('/api/keda/pod')
+                .then(res => res.json())
+                .then(({ items }) => {
+                    if (items.length > 0) {
+                        return items[0];
+                }});
+
+        await fetch(`/api/namespace/${pod.metadata.namespace}/pods/${pod.metadata.name}/logs`)
+                .then(res => res.text())
+                .then(logs => this.formatLogs(logs, pod.metadata.name, pod.metadata.namespace))
+                
+    }
+
     private formatLogs(text: string, name: string, namespace: string) {
         let logs = text.split("\n");
         let scaledObjectLogs: LogModel[] = [];

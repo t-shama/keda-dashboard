@@ -116,6 +116,33 @@ export function setupApis(app: Express) {
         res.send(jsonStr);
     });
 
+    app.get(`/api/namespace/:namespace/pods/:name/logs`, async (req, res) => {
+        let namespace = req.params.namespace;
+        let name = req.params.name;
+
+        if (!namespace) {
+            namespace = 'default';
+        }
+
+        const cluster = kc.getCurrentCluster();
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+
+        const opts: request.Options = {
+            url: `${cluster.server}/api/v1/namespaces/${namespace}/pods/${name}/log?tailLines=300`
+        };
+        kc.applyToRequest(opts);
+        const jsonStr = await request.get(opts);
+
+        res.setHeader('Content-Type', 'application/json');
+        res.send(jsonStr);
+    });
+    
+
     app.get('/api/keda', async (req, res) => {
         const cluster = kc.getCurrentCluster();
 
@@ -133,6 +160,26 @@ export function setupApis(app: Express) {
         const jsonStr = await request.get(opts);
         res.setHeader('Content-Type', 'application/json');
         res.send(jsonStr);
+    });
+
+    app.get('/api/keda/pod', async (req, res) => {
+        const cluster = kc.getCurrentCluster();
+
+        if (!cluster) {
+            res.status(501).json({
+                error: 'cluster not found'
+            });
+            return;
+        }
+
+        const opts: request.Options = {
+            url: `${cluster.server}/api/v1/namespaces/keda/pods?labelSelector=app%3Dkeda-operator`
+        };
+        kc.applyToRequest(opts);
+        let pod = await request.get(opts);
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.send(pod);
     });
 
     app.get('/api/logs', async (req, res) => {

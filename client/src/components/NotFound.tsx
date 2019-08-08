@@ -11,7 +11,7 @@ export default class NotFound extends React.Component<{}> {
                           justify = "center"
                           style={{
                             position: 'absolute', 
-                            top: '30%',
+                            top: '35%',
                             }}>
                         <Grid item xs={12} md={12} lg={12}>
                             <Typography align="center" variant="h1">404 Error</Typography>

@@ -20,6 +20,21 @@ export default class ScaleControllerDashboard extends React.Component<ScaleContr
         };
     }
 
+    private async getLogs() {
+        let pod = await fetch('/api/keda/pod')
+                .then(res => res.json())
+                .then(({ items }) => {
+                    if (items.length > 0) {
+                        return items[0];
+                }});
+
+        await fetch(`/api/namespace/${pod.metadata.namespace}/pods/${pod.metadata.name}/logs`)
+                .then(res => res.text())
+                .then(logs => this.formatLogs(logs))
+                .then(logArray => this.setState({ logs: logArray }));
+                
+    }
+
     formatLogs(text: string) {
         let logs = text.split("\n");
         let scaleControllerLogs: LogModel[] = [];

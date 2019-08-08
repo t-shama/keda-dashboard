@@ -25,6 +25,8 @@ Any changes to be made to either the app bar or the side bar should therefore be
 
 `formatLogs` parses through every line in the log and displays all except those emitting logs for historical data about a scaled object's replica count or metrics. An important thing to note that if you choose to change the way the Scaled Object's replica count and metrics are emitted in the longs, the regexes **must** be changed here too.
 
+`getLogs` is a method I didn't quite yet get to finish. The API call I currently use to get the scale controller's logs requires me to know the name of the pod running KEDA. I created an API request that can find this pod using its label (can be found in `apis.ts`) but this restructuring meant I have to make two API calls for logs instead of one (one to find the pod, and another to get the logs from the pod). There is another version of this for the `ScaledObjectDetailsDashboard`. 
+
 ### ScaleControllerDetailPanel 
 
 `ScaleControllerDetailPanel` primarily displays your KEDA deployment's information in a panel. The most notable thing to note about the panel is the `listChips` method, which formats a list into `Chip` components. I created a constant component called `ScaleControllerDetail` which took in a detailName and detailValue, but it became difficult to determine whether or not `detailValue` was a list or just one value, so I ended up creating another prop called `detailValueList` to only take list items in so that `ScaleControllerDetail` knew whether or not to display `Chips` or just a `Typography` element based on which prop was given. I did not do anything to validate this (between `detailValue` and `detailValueList`) so this might cause some bugs or issues.
@@ -47,9 +49,13 @@ The `ScaledObjectsDetailDashboard` currently has 5 panels: the `ScaledObjectDeta
 
 The `formatLogs` method works the same as the `ScaleControllerDashboard`'s method except that it does one additional check--it finds logs that emit external metrics and finds the metrics associated with a scale decision. The KEDA scale controller seems to emit scale decision/activation logs before logs with external metrics. To solve this issue, all scale decision logs were additionally saved in a dictionary so that when an external metric was found, it could be added to a log with the same timestamp. One problem with this was that sometimes there are multiple metrics with the same timestamp, or a metric would be emitted in a slightly different timestamp. The solution I took was to not consider the milliseconds in the timestamp and round the timestamp's seconds up. However, sometimes metrics still do not match up with the correct logs, so more improvements need to be made here.
 
+`getLogs` is almost exactly the same as `getLogs` in `ScaleControllerLogPanel`.
+
 ### ScaleObjectDetailPanel, ScaleTargetPanel, and ScaledObjectLogPanel
 
 Both the `ScaleObjectDetailPanel` and `ScaledObjectLogPanel` are similar to the `ScaleControllerDashboard`'s counterparts with a few additional React components. The `ScaleTargetPanel` is also similar to the detail panels.
+
+An issue in the `ScaledObjectLogPanel` is that sometimes it does not pick up the input metrics correctly. This is primarily because metrics are not emitted in logs until after a scaled object is activated (and thus after the log showing that a scaled object activated is already displayed in the log table). 
 
 ### TriggerTable
 
@@ -57,8 +63,8 @@ The `TriggerTable` lists all the triggers of a Scaled Object. Although getting m
 
 ### ReplicaDisplay
 
-The `ReplicaDisplay` is essentially a bar graph created with the [nivo](https://github.com/plouc/nivo) library. I chose it because it was open-source and because it had extensive documentation that was very easy to follow. Documentation on the nivo bar graph can be found [here](https://nivo.rocks/bar/). 
+The `ReplicaDisplay` is essentially a bar graph created with the [nivo](https://github.com/plouc/nivo) library. I chose it because it was open-source and because it had extensive documentation that was easy to follow. Documentation on the nivo bar graph can be found [here](https://nivo.rocks/bar/). 
 
 The `ReplicaDisplay` has to make its own API call to get logs and parse through them for logs emitting metrics about the replica count. For now it displays the replica count of the last 50 minutes. One issue I had was determining what was the best way to represent the replica count would be. Although I for now pull directly from the replica count at each timestamp, if you wanted to capture the number of logs every past 5 minutes, `getMetricsFromLogs` might have to be changed to either get a log emitted after every 5 minutes, or get all the logs in a 5 minute timespan and calculate the average.
 
-Another issue with the replica display is that because there are so many timestamps, the labels end up crowding the x-axis. While it's possible to space out ticks on the y-axis, nivo does not seem to have the same thing for the x-axis.
+Another issue with the replica display is that because there are so many timestamps, the labels end up crowding the x-axis. While it's possible to space out ticks on the y-axis, nivo does not seem to have the same configurable property for the x-axis.
